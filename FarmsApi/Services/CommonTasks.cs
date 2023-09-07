@@ -27,6 +27,8 @@ namespace FarmsApi.Services
 
         public void InsertSchedularToken()
         {
+            string MasterApiKey = ConfigurationSettings.AppSettings["MasterApiKey"].ToString();
+
             string IsProduction = ConfigurationSettings.AppSettings["IsProduction"].ToString();
             string SlikaUrlChargeToken = ConfigurationSettings.AppSettings["SlikaUrlChargeToken"].ToString();
 
@@ -37,6 +39,21 @@ namespace FarmsApi.Services
 
             using (var Context = new Context())
             {
+
+                Logs lgstaet = new Logs();
+                lgstaet.Type = 22;// בדיקה שהסקדולר רץ
+                lgstaet.TimeStamp = DateTime.Now;
+                lgstaet.Request = "";
+                lgstaet.RequestEzea = "";
+                lgstaet.RequestTimeStamp = DateTime.Now;
+                lgstaet.StudentId = 9999;
+
+                lgstaet.Response = "";
+                lgstaet.ResponseTimeStamp = DateTime.Now;
+                Context.Logs.Add(lgstaet);
+
+                Context.SaveChanges();
+
 
                 var UsersToPay = Context.Users.Where(x => x.Active == "active" &&
                              x.DateForMonthlyPay.Value.Day == Day &&
@@ -70,7 +87,8 @@ namespace FarmsApi.Services
                     var reqObjAshrai = new
                     {
                         api_key = api_key,
-                        developer_email = "tzahi556@gmail.com",
+                        created_by_api_key = MasterApiKey,
+                        developer_email = "musicminor@gmail.com",
                         sum = up.DateForMonthlySum,
                         cc_token = up.cc_token,
                         cc_4_digits = up.cc_4_digits,
@@ -120,11 +138,12 @@ namespace FarmsApi.Services
                             var reqObj = new
                             {
                                 api_key = api_key,
+                                created_by_api_key = MasterApiKey,
                                 api_email = api_email,
                                 ua_uuid = ua_uuid,
 
-                                developer_email = "tzahi556@gmail.com",
-                                developer_phone = "0505913817",
+                                developer_email = "musicminor@gmail.com",
+                                developer_phone = "0544249573",
                                 type = 320,//קבלה חשבונית מס
                                 description = ap.InvoiceTitle,
                                 customer_name = up.FirstName + " " + up.LastName,
@@ -147,8 +166,21 @@ namespace FarmsApi.Services
                                 price_total = up.DateForMonthlySum,
                             };
 
+                            Logs lg = new Logs();
+                            lg.Type = 2;// החזרת צק
+                            lg.TimeStamp = DateTime.Now;
+                            lg.Request = reqObj.ToString();
+                            lg.RequestEzea = reqObj.ToString();
+                            lg.RequestTimeStamp = DateTime.Now;
+                            lg.StudentId = up.Id;
 
                             dynamic response = doc.execute(((IsProduction == "0") ? Constants.ENV_TEST : Constants.ENV_PRODUCTION), reqObj);
+
+                            lg.Response = response.ToString();
+                            lg.ResponseTimeStamp = DateTime.Now;
+                            Context.Logs.Add(lg);
+
+                            Context.SaveChanges();
 
                             // אם זה הצליח
                             if (response[5].ToString() == "True")
@@ -173,6 +205,18 @@ namespace FarmsApi.Services
 
                                 up.DateForMonthlyPrev = ((up.DateForMonthlyPrev == null) ? 0 : up.DateForMonthlyPrev) + 1;
                                 Context.Entry(up).State = System.Data.Entity.EntityState.Modified;
+
+                                lg = new Logs();
+                                lg.Type = 4; // חשבונית חדשה חשבונית אצלינו
+                                lg.TimeStamp = DateTime.Now;
+                                lg.Request = p.InvoiceNum;
+                                lg.StudentId = up.Id;
+                                // lg.UserId = UsersService.GetCurrentUser().Id;
+                                lg.Response = p.InvoicePdf;
+
+                                lg.ResponseTimeStamp = DateTime.Now;
+                                lg.RequestTimeStamp = DateTime.Now;
+                                Context.Logs.Add(lg);
 
                                 Context.SaveChanges();
 
@@ -298,19 +342,14 @@ namespace FarmsApi.Services
         public void InsertChecksToMas()
         {
 
+            string MasterApiKey = ConfigurationSettings.AppSettings["MasterApiKey"].ToString();
 
-           
             string IsProduction = ConfigurationSettings.AppSettings["IsProduction"].ToString();
 
 
             DateTime CurrentDate = DateTime.Now.Date;
             using (var Context = new Context())
             {
-
-
-
-
-
 
                 Logs lgstaet = new Logs();
                 lgstaet.Type = 20;// בדיקה שהסקדולר רץ
@@ -319,7 +358,6 @@ namespace FarmsApi.Services
                 lgstaet.RequestEzea = "";
                 lgstaet.RequestTimeStamp = DateTime.Now;
                 lgstaet.StudentId = 9999;
-             
 
                 lgstaet.Response = "";
                 lgstaet.ResponseTimeStamp = DateTime.Now;
@@ -328,59 +366,63 @@ namespace FarmsApi.Services
                 Context.SaveChanges();
 
 
-
-                var UsersChecks = Context.Checks.Where(x =>x.checks_date== CurrentDate && x.checks_auto).ToList();
+                var UsersChecks = Context.Checks.Where(x => x.checks_date == CurrentDate && x.checks_auto).ToList();
                 //בשביל להביא קודמים שלא עלו
-               // var UsersChecks = Context.Checks.Where(x => x.checks_date < CurrentDate && x.checks_auto).ToList();
+                //var UsersChecks = Context.Checks.Where(x => x.checks_date < CurrentDate && x.checks_auto).ToList();
                 foreach (var uc in UsersChecks)
                 {
-                    var User = Context.Users.Where(y => y.Id == uc.UserId).FirstOrDefault();
-                    var PaymentUser = Context.Payments.Where(y => y.Id == uc.PaymentsId && !y.Deleted && y.ZikuyNumber==null).FirstOrDefault();
-                    var Farm = Context.Farms.Where(y => y.Id == User.Farm_Id).FirstOrDefault();
-                    var Meta = JObject.Parse(Farm.Meta);
-                    var api_key = Meta["api_key"];
-                    var api_email = Meta["api_email"];
-                    var ua_uuid = Meta["ua_uuid"];
 
-                    if (User == null || PaymentUser == null ||
-                        (PaymentUser.canceled != null && PaymentUser.canceled != "") ||
-                        api_key == null
-                        )
-                        continue;
-
-
-
-                    if (!string.IsNullOrEmpty(PaymentUser.InvoicePdf))
+                    try
                     {
-                        DocCreation doc = new DocCreation();
-                        List<dynamic> Payment = new List<dynamic>();
-                        Payment.Add(new
+
+                        var User = Context.Users.Where(y => y.Id == uc.UserId).FirstOrDefault();
+                        var PaymentUser = Context.Payments.Where(y => y.Id == uc.PaymentsId && !y.Deleted && y.ZikuyNumber == null).FirstOrDefault();
+                        var Farm = Context.Farms.Where(y => y.Id == User.Farm_Id).FirstOrDefault();
+                        var Meta = JObject.Parse(Farm.Meta);
+                        var api_key = Meta["api_key"];
+                        var api_email = Meta["api_email"];
+                        var ua_uuid = Meta["ua_uuid"];
+
+                        if (User == null || PaymentUser == null ||
+                            (PaymentUser.canceled != null && PaymentUser.canceled != "") ||
+                            api_key == null
+                            )
+                            continue;
+
+
+
+                        if (!string.IsNullOrEmpty(PaymentUser.InvoicePdf))
                         {
-                            payment_type = 2,
-                            date = uc.checks_date.Value.ToString("dd/MM/yyyy"),
-                            payment = uc.checks_sum,
-                            checks_bank_name = uc.checks_bank_name,
-                            checks_number = uc.checks_number,
+                            DocCreation doc = new DocCreation();
+                            List<dynamic> Payment = new List<dynamic>();
+                            Payment.Add(new
+                            {
+                                payment_type = 2,
+                                date = uc.checks_date.Value.ToString("dd/MM/yyyy"),
+                                payment = uc.checks_sum,
+                                checks_bank_name = uc.checks_bank_name,
+                                checks_number = uc.checks_number,
 
-                        });
+                            });
 
-                        var reqObj = new
-                        {
-                            api_key = (string)api_key,
-                            api_email = (string)api_email,
-                            ua_uuid = (string)ua_uuid,
+                            var reqObj = new
+                            {
+                                api_key = (string)api_key,
+                                created_by_api_key = MasterApiKey,
+                                api_email = (string)api_email,
+                                ua_uuid = (string)ua_uuid,
 
-                            developer_email = "tzahi556@gmail.com",
-                            developer_phone = "0505913817",
-                            type = 305,// חשבונית מס
-                            description = "פירעון שיק",
-                            customer_name = User.FirstName + " " + User.LastName,
-                            customer_email = User.AnotherEmail,
-                            customer_address = User.Address,
-                            comment = "מס לקוח: " + User.ClientNumber + ", ת.ז.: " + User.IdNumber,
-                            parent = PaymentUser.doc_uuid,
+                                developer_email = "musicminor@gmail.com",
+                                developer_phone = "0544249573",
+                                type = 305,// חשבונית מס
+                                description = "פירעון שיק",
+                                customer_name = User.FirstName + " " + User.LastName,
+                                customer_email = User.AnotherEmail,
+                                customer_address = User.Address,
+                                comment = "מס לקוח: " + User.ClientNumber + ", ת.ז.: " + User.IdNumber,
+                                parent = PaymentUser.doc_uuid,
 
-                            item = new dynamic[] {
+                                item = new dynamic[] {
                             new {
                                     details ="פירעון שיק" + uc.checks_number,
                                     amount = 1,
@@ -390,40 +432,80 @@ namespace FarmsApi.Services
 
                         },
 
-                            payment = Payment,
-                            //  details = Params.checks_date != null ? "תאריך פרעון צ'ק: " + ((DateTime)Params.checks_date).ToLocalTime().ToShortDateString() : "",
-                            price_total = uc.checks_sum,
-                        };
+                                payment = Payment,
+                                //  details = Params.checks_date != null ? "תאריך פרעון צ'ק: " + ((DateTime)Params.checks_date).ToLocalTime().ToShortDateString() : "",
+                                price_total = uc.checks_sum,
+                            };
 
 
 
-                        Logs lg = new Logs();
-                        lg.Type = 2;// החזרת צק
-                        lg.TimeStamp = DateTime.Now;
-                        lg.Request = reqObj.ToString();
-                        lg.RequestEzea = reqObj.ToString();
-                        lg.RequestTimeStamp = DateTime.Now;
-                        lg.StudentId = uc.UserId;
-                      //  lg.UserId = UsersService.GetCurrentUser().Id;
+                            Logs lg = new Logs();
+                            lg.Type = 2;// החזרת צק
+                            lg.TimeStamp = DateTime.Now;
+                            lg.Request = reqObj.ToString();
+                            lg.RequestEzea = reqObj.ToString();
+                            lg.RequestTimeStamp = DateTime.Now;
+                            lg.StudentId = uc.UserId;
+                            //  lg.UserId = UsersService.GetCurrentUser().Id;
 
 
 
-                        dynamic response = doc.execute(((IsProduction == "0") ? Constants.ENV_TEST : Constants.ENV_PRODUCTION), reqObj);
-                       
-                        lg.Response = response.ToString();
-                        lg.ResponseTimeStamp = DateTime.Now;
-                        Context.Logs.Add(lg);
+                            dynamic response = doc.execute(((IsProduction == "0") ? Constants.ENV_TEST : Constants.ENV_PRODUCTION), reqObj);
 
-                        Context.SaveChanges();
+                            lg.Response = response.ToString();
+                            lg.ResponseTimeStamp = DateTime.Now;
+                            Context.Logs.Add(lg);
 
-                        // אם זה הצליח
-                        if (response[5].ToString() == "True")
+                            Context.SaveChanges();
+
+                            // אם זה הצליח
+                            if (response[5].ToString() == "True")
+                            {
+                                Payments p = new Payments();
+                                p.Date = uc.checks_date;
+                                p.doc_type = "Mas";
+                                p.InvoiceNum = response[2].ToString();
+                                p.InvoicePdf = response[0].ToString();
+                                p.ParentInvoiceNum = PaymentUser.InvoiceNum;
+                                p.ParentInvoicePdf = PaymentUser.InvoicePdf;
+                                p.SelectedForInvoice = true;
+                                p.Price = uc.checks_sum;
+                                p.InvoiceDetails = " פירעון שיק " + uc.checks_number;
+                                p.UserId = User.Id;
+                                p.InvoiceSum = uc.checks_sum;
+
+                                uc.checks_auto = false;
+                                Context.Payments.Add(p);
+                                // Context.SaveChanges();
+                                //PaymentUser.SelectedForInvoice = true;
+                                Context.Entry(PaymentUser).State = System.Data.Entity.EntityState.Modified;
+
+
+                                lg = new Logs();
+                                lg.Type = 4; // חשבונית חדשה חשבונית אצלינו
+                                lg.TimeStamp = DateTime.Now;
+                                lg.Request = p.InvoiceNum;
+                                lg.StudentId = uc.UserId;
+                                // lg.UserId = UsersService.GetCurrentUser().Id;
+                                lg.Response = p.InvoicePdf;
+
+                                lg.ResponseTimeStamp = DateTime.Now;
+                                lg.RequestTimeStamp = DateTime.Now;
+                                Context.Logs.Add(lg);
+
+
+                                Context.SaveChanges();
+
+
+                            }
+                        }
+                        else
                         {
                             Payments p = new Payments();
                             p.Date = uc.checks_date;
                             p.doc_type = "Mas";
-                            p.InvoiceNum = response[2].ToString();
-                            p.InvoicePdf = response[0].ToString();
+                            p.InvoiceNum = uc.checks_number;
+                            p.InvoicePdf = "";
                             p.ParentInvoiceNum = PaymentUser.InvoiceNum;
                             p.ParentInvoicePdf = PaymentUser.InvoicePdf;
                             p.SelectedForInvoice = true;
@@ -434,50 +516,19 @@ namespace FarmsApi.Services
 
                             uc.checks_auto = false;
                             Context.Payments.Add(p);
-                            // Context.SaveChanges();
-                            //PaymentUser.SelectedForInvoice = true;
+                            //  Context.SaveChanges();
+                            PaymentUser.SelectedForInvoice = true;
                             Context.Entry(PaymentUser).State = System.Data.Entity.EntityState.Modified;
-
-
-                            lg = new Logs();
-                            lg.Type = 4; // חשבונית חדשה חשבונית אצלינו
-                            lg.TimeStamp = DateTime.Now;
-                            lg.Request = p.InvoiceNum;
-                            lg.StudentId = uc.UserId;
-                           // lg.UserId = UsersService.GetCurrentUser().Id;
-                            lg.Response = p.InvoicePdf;
-
-                            lg.ResponseTimeStamp = DateTime.Now;
-                            lg.RequestTimeStamp = DateTime.Now;
-                            Context.Logs.Add(lg);
-
-
                             Context.SaveChanges();
 
 
                         }
-                    }
-                    else
-                    {
-                        Payments p = new Payments();
-                        p.Date = uc.checks_date;
-                        p.doc_type = "Mas";
-                        p.InvoiceNum = uc.checks_number;
-                        p.InvoicePdf = "";
-                        p.ParentInvoiceNum = PaymentUser.InvoiceNum;
-                        p.ParentInvoicePdf = PaymentUser.InvoicePdf;
-                        p.SelectedForInvoice = true;
-                        p.Price = uc.checks_sum;
-                        p.InvoiceDetails = " פירעון שיק " + uc.checks_number;
-                        p.UserId = User.Id;
-                        p.InvoiceSum = uc.checks_sum;
 
-                        uc.checks_auto = false;
-                        Context.Payments.Add(p);
-                        //  Context.SaveChanges();
-                        PaymentUser.SelectedForInvoice = true;
-                        Context.Entry(PaymentUser).State = System.Data.Entity.EntityState.Modified;
-                        Context.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+
+
 
 
                     }
@@ -490,7 +541,7 @@ namespace FarmsApi.Services
         public void InsertAshraisToMas()
         {
 
-
+            string MasterApiKey = ConfigurationSettings.AppSettings["MasterApiKey"].ToString();
 
             string IsProduction = ConfigurationSettings.AppSettings["IsProduction"].ToString();
 
@@ -500,74 +551,96 @@ namespace FarmsApi.Services
             {
 
 
+                Logs lgstaet = new Logs();
+                lgstaet.Type = 102;// בדיקה שהסקדולר רץ
+                lgstaet.TimeStamp = DateTime.Now;
+                lgstaet.Request = "";
+                lgstaet.RequestEzea = "";
+                lgstaet.RequestTimeStamp = DateTime.Now;
+                lgstaet.StudentId = 9999;
+
+                lgstaet.Response = "";
+                lgstaet.ResponseTimeStamp = DateTime.Now;
+                Context.Logs.Add(lgstaet);
+
+                Context.SaveChanges();
+
 
                 var UsersAshrais = Context.Ashrais.Where(x => x.AshraiDate == CurrentDate && x.ashrai_auto).ToList();
+                //var UsersAshrais = Context.Ashrais.Where(x => x.AshraiDate.Value.Year == 2022 && x.ashrai_auto).ToList();
                 //בשביל להביא קודמים שלא עלו
                 // var UsersChecks = Context.Checks.Where(x => x.checks_date < CurrentDate && x.checks_auto).ToList();
                 foreach (var uc in UsersAshrais)
                 {
-                    var User = Context.Users.Where(y => y.Id == uc.UserId).FirstOrDefault();
-                    var PaymentUser = Context.Payments.Where(y => y.Id == uc.PaymentsId && !y.Deleted && y.ZikuyNumber == null).FirstOrDefault();
-                    var Farm = Context.Farms.Where(y => y.Id == User.Farm_Id).FirstOrDefault();
-                    var Meta = JObject.Parse(Farm.Meta);
-                    var api_key = Meta["api_key"];
-                    var api_email = Meta["api_email"];
-                    var ua_uuid = Meta["ua_uuid"];
 
-                    if (User == null || PaymentUser == null ||
-                        (PaymentUser.canceled != null && PaymentUser.canceled != "") ||
-                        api_key == null
-                        )
-                        continue;
-
-
-
-                    if (!string.IsNullOrEmpty(PaymentUser.InvoicePdf))
+                    try
                     {
-                        DocCreation doc = new DocCreation();
-                        List<dynamic> Payment = new List<dynamic>();
-                        Payment.Add(new
+
+                        var User = Context.Users.Where(y => y.Id == uc.UserId && !y.Deleted).FirstOrDefault();
+                        var PaymentUser = Context.Payments.Where(y => y.Id == uc.PaymentsId && !y.Deleted && y.ZikuyNumber == null).FirstOrDefault();
+                        var Farm = Context.Farms.Where(y => y.Id == User.Farm_Id).FirstOrDefault();
+                        var Meta = JObject.Parse(Farm.Meta);
+                        var api_key = Meta["api_key"];
+                        var api_email = Meta["api_email"];
+                        var ua_uuid = Meta["ua_uuid"];
+
+                        if (User == null || PaymentUser == null ||
+                            (PaymentUser.canceled != null && PaymentUser.canceled != "") ||
+                            api_key == null
+                            )
+                            continue;
+
+
+
+                        if (!string.IsNullOrEmpty(PaymentUser.InvoicePdf))
                         {
-                            //payment_type = 2,
-                            //date = uc.checks_date.Value.ToString("dd/MM/yyyy"),
-                            //payment = uc.checks_sum,
-                            //checks_bank_name = uc.checks_bank_name,
-                            //checks_number = uc.checks_number,
+                            DocCreation doc = new DocCreation();
+                            List<dynamic> Payment = new List<dynamic>();
+                            Payment.Add(new
+                            {
+                                //payment_type = 2,
+                                //date = uc.checks_date.Value.ToString("dd/MM/yyyy"),
+                                //payment = uc.checks_sum,
+                                //checks_bank_name = uc.checks_bank_name,
+                                //checks_number = uc.checks_number,
 
-                            payment_type = 3,
-                            date = uc.AshraiDate.Value.ToString("dd/MM/yyyy"),
-                            payment = uc.ashrai_sum,
+                                payment_type = 3,
+                                date = uc.AshraiDate.Value.ToString("dd/MM/yyyy"),
+                                payment = uc.ashrai_sum,
 
-                            cc_type =uc.cc_type,
-                            cc_type_name = uc.cc_type_name,
-                            cc_number = uc.cc_number,
-                            cc_deal_type = uc.cc_deal_type,
-                            cc_num_of_payments = uc.cc_num_of_payments,
-                            cc_payment_num = uc.cc_payment_num,
-
-
+                                cc_type = uc.cc_type,
+                                cc_type_name = uc.cc_type_name,
+                                cc_number = uc.cc_number,
+                                cc_deal_type = uc.cc_deal_type,
+                                cc_num_of_payments = uc.cc_num_of_payments,
+                                cc_payment_num = uc.cc_payment_num,
 
 
 
-                        });
 
-                        var reqObj = new
-                        {
-                            api_key = (string)api_key,
-                            api_email = (string)api_email,
-                            ua_uuid = (string)ua_uuid,
 
-                            developer_email = "tzahi556@gmail.com",
-                            developer_phone = "0505913817",
-                            type = 305,// חשבונית מס
-                            description = "פירעון אשראי תשלומים",
-                            customer_name = User.FirstName + " " + User.LastName,
-                            customer_email = User.AnotherEmail,
-                            customer_address = User.Address,
-                            comment = "מס לקוח: " + User.ClientNumber + ", ת.ז.: " + User.IdNumber,
-                            parent = PaymentUser.doc_uuid,
+                            });
 
-                            item = new dynamic[] {
+                            var reqObj = new
+                            {
+                                api_key = (string)api_key,
+                                created_by_api_key = MasterApiKey,
+                                api_email = (string)api_email,
+                                ua_uuid = (string)ua_uuid,
+                                //date = uc.AshraiDate.Value.ToString("dd/MM/yyyy"),
+                                auto_balance = true,
+                                developer_email = "musicminor@gmail.com",
+                                developer_phone = "0544249573",
+                                type = 305,// חשבונית מס
+                                description = "פירעון אשראי תשלומים",
+                                customer_name = User.FirstName + " " + User.LastName,
+                                customer_email = User.AnotherEmail,
+                                //email_text = "מסמך זה אינו חיוב! עקב תקלת עבר במערכת נשלחה אליכם היום חשבונית מס עבור תשלום משנת 2022, מתנצלים על חוסר הנוחות",
+                                customer_address = User.Address,
+                                comment = "מס לקוח: " + User.ClientNumber + ", ת.ז.: " + User.IdNumber,
+                                parent = PaymentUser.doc_uuid,
+
+                                item = new dynamic[] {
                             new {
                                     details =" פירעון אשראי תשלומים",
                                     amount = 1,
@@ -577,45 +650,85 @@ namespace FarmsApi.Services
 
                         },
 
-                            payment = Payment,
-                            //  details = Params.checks_date != null ? "תאריך פרעון צ'ק: " + ((DateTime)Params.checks_date).ToLocalTime().ToShortDateString() : "",
-                            price_total = uc.ashrai_sum,
-                        };
+                                payment = Payment,
+                                //  details = Params.checks_date != null ? "תאריך פרעון צ'ק: " + ((DateTime)Params.checks_date).ToLocalTime().ToShortDateString() : "",
+                                price_total = uc.ashrai_sum,
+                            };
 
 
 
-                        Logs lg = new Logs();
-                        lg.Type = 7;// אשראי
-                        lg.TimeStamp = DateTime.Now;
-                        lg.Request = reqObj.ToString();
-                        lg.RequestEzea = reqObj.ToString();
-                        lg.RequestTimeStamp = DateTime.Now;
-                        lg.StudentId = uc.UserId;
-                        //  lg.UserId = UsersService.GetCurrentUser().Id;
+                            Logs lg = new Logs();
+                            lg.Type = 7;// אשראי
+                            lg.TimeStamp = DateTime.Now;
+                            lg.Request = reqObj.ToString();
+                            lg.RequestEzea = reqObj.ToString();
+                            lg.RequestTimeStamp = DateTime.Now;
+                            lg.StudentId = uc.UserId;
+                            //  lg.UserId = UsersService.GetCurrentUser().Id;
 
 
 
-                        dynamic response = doc.execute(((IsProduction == "0") ? Constants.ENV_TEST : Constants.ENV_PRODUCTION), reqObj);
+                            dynamic response = doc.execute(((IsProduction == "0") ? Constants.ENV_TEST : Constants.ENV_PRODUCTION), reqObj);
 
-                        lg.Response = response.ToString();
-                        lg.ResponseTimeStamp = DateTime.Now;
-                        Context.Logs.Add(lg);
+                            lg.Response = response.ToString();
+                            lg.ResponseTimeStamp = DateTime.Now;
+                            Context.Logs.Add(lg);
 
-                        Context.SaveChanges();
+                            Context.SaveChanges();
 
-                        // אם זה הצליח
-                        if (response[5].ToString() == "True")
+                            // אם זה הצליח
+                            if (response[5].ToString() == "True")
+                            {
+                                Payments p = new Payments();
+                                p.Date = uc.AshraiDate;
+                                p.doc_type = "Mas";
+                                p.InvoiceNum = response[2].ToString();
+                                p.InvoicePdf = response[0].ToString();
+                                p.ParentInvoiceNum = PaymentUser.InvoiceNum;
+                                p.ParentInvoicePdf = PaymentUser.InvoicePdf;
+                                p.SelectedForInvoice = true;
+                                p.Price = uc.ashrai_sum;
+                                p.InvoiceDetails = " פירעון אשראי - תשלומים ";
+                                p.UserId = User.Id;
+                                p.InvoiceSum = uc.ashrai_sum;
+
+                                uc.ashrai_auto = false;
+                                Context.Payments.Add(p);
+                                //  Context.SaveChanges();
+                                PaymentUser.SelectedForInvoice = true;
+                                Context.Entry(PaymentUser).State = System.Data.Entity.EntityState.Modified;
+
+
+                                lg = new Logs();
+                                lg.Type = 4; // חשבונית חדשה חשבונית אצלינו
+                                lg.TimeStamp = DateTime.Now;
+                                lg.Request = p.InvoiceNum;
+                                lg.StudentId = uc.UserId;
+                                // lg.UserId = UsersService.GetCurrentUser().Id;
+                                lg.Response = p.InvoicePdf;
+
+                                lg.ResponseTimeStamp = DateTime.Now;
+                                lg.RequestTimeStamp = DateTime.Now;
+                                Context.Logs.Add(lg);
+
+
+                                Context.SaveChanges();
+
+
+                            }
+                        }
+                        else
                         {
                             Payments p = new Payments();
                             p.Date = uc.AshraiDate;
                             p.doc_type = "Mas";
-                            p.InvoiceNum = response[2].ToString();
-                            p.InvoicePdf = response[0].ToString();
+                            p.InvoiceNum = uc.cc_payment_num;
+                            p.InvoicePdf = "";
                             p.ParentInvoiceNum = PaymentUser.InvoiceNum;
                             p.ParentInvoicePdf = PaymentUser.InvoicePdf;
                             p.SelectedForInvoice = true;
                             p.Price = uc.ashrai_sum;
-                            p.InvoiceDetails = " פירעון אשראי - תשלומים " ;
+                            p.InvoiceDetails = " פירעון אשראי - תשלומים ";
                             p.UserId = User.Id;
                             p.InvoiceSum = uc.ashrai_sum;
 
@@ -624,51 +737,18 @@ namespace FarmsApi.Services
                             //  Context.SaveChanges();
                             PaymentUser.SelectedForInvoice = true;
                             Context.Entry(PaymentUser).State = System.Data.Entity.EntityState.Modified;
-
-
-                            lg = new Logs();
-                            lg.Type = 4; // חשבונית חדשה חשבונית אצלינו
-                            lg.TimeStamp = DateTime.Now;
-                            lg.Request = p.InvoiceNum;
-                            lg.StudentId = uc.UserId;
-                            // lg.UserId = UsersService.GetCurrentUser().Id;
-                            lg.Response = p.InvoicePdf;
-
-                            lg.ResponseTimeStamp = DateTime.Now;
-                            lg.RequestTimeStamp = DateTime.Now;
-                            Context.Logs.Add(lg);
-
-
                             Context.SaveChanges();
 
 
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Payments p = new Payments();
-                        p.Date = uc.AshraiDate;
-                        p.doc_type = "Mas";
-                        p.InvoiceNum = uc.cc_payment_num;
-                        p.InvoicePdf = "";
-                        p.ParentInvoiceNum = PaymentUser.InvoiceNum;
-                        p.ParentInvoicePdf = PaymentUser.InvoicePdf;
-                        p.SelectedForInvoice = true;
-                        p.Price = uc.ashrai_sum;
-                        p.InvoiceDetails = " פירעון אשראי - תשלומים ";
-                        p.UserId = User.Id;
-                        p.InvoiceSum = uc.ashrai_sum;
 
-                        uc.ashrai_auto = false;
-                        Context.Payments.Add(p);
-                        //  Context.SaveChanges();
-                        PaymentUser.SelectedForInvoice = true;
-                        Context.Entry(PaymentUser).State = System.Data.Entity.EntityState.Modified;
-                        Context.SaveChanges();
+
 
 
                     }
-
                 }
             }
 
@@ -680,13 +760,13 @@ namespace FarmsApi.Services
             {
 
                 var CurrentDate = DateTime.Now;
-                var UsersH = Context.UserHorses.Where(x=>!x.IsCancelAuto || (x.IsCancelAuto && CurrentDate > x.UntilCancelTime)).ToList();
-                
+                var UsersH = Context.UserHorses.Where(x => !x.IsCancelAuto || (x.IsCancelAuto && CurrentDate > x.UntilCancelTime)).ToList();
+
                 foreach (var UserH in UsersH)
                 {
                     // במידה והסוס מחוק או לא פעיל
                     Horse h = Context.Horses.Where(x => x.Id == UserH.HorseId).FirstOrDefault();
-                    if (h != null && (h.Deleted || h.Active== "notActive")) continue;
+                    if (h != null && (h.Deleted || h.Active == "notActive")) continue;
 
                     var PensionPrice = UserH.PensionPrice;
                     var TrainingCost = UserH.TrainingCost;
@@ -699,7 +779,7 @@ namespace FarmsApi.Services
                     if (TrainingCost != null && TrainingCost > 0)
                         addExpen += " + אימון(" + TrainingCost + ")";
 
-                 
+
                     if (!string.IsNullOrEmpty(addExpen))
                     {
                         Expenses ex = new Expenses();

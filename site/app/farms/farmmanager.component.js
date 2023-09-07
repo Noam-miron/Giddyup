@@ -87,8 +87,8 @@
                 } else {
                     //https://www.giddyup.co.il/#/farmmanager/?fromSend=fromSend
                     //http://localhost:51517/#/farmmanager/?fromSend=fromSend
-                    var payWind = window.open("https://www.giddyup.co.il/#/farmmanager/?fromSend=fromSend", "Upload Chapter content", "width=700,height=350,top=200,left=500");
-                   
+                    //var payWind = window.open("https://www.giddyup.co.il/#/farmmanager/?fromSend=fromSend", "Upload Chapter content", "width=700,height=350,top=200,left=500");
+                    var payWind = window.open("http://localhost:51517/#/farmmanager/?fromSend=fromSend", "Upload Chapter content", "width=700,height=350,top=200,left=500");
 
                 }
 

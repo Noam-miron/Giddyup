@@ -14,6 +14,13 @@
                 <input type="color" ng-model="$ctrl.user.EventsColor" />
             </div>
             <div class="form-group">
+                <label>פעיל</label>
+                <select class="form-control" ng-model="$ctrl.user.Active" required>
+                    <option value="active">פעיל</option>
+                    <option value="notActive">לא פעיל</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label>אימייל</label>
                 <input type="email" name="email" class="form-control" ng-model="$ctrl.user.Email" ng-model-options="{updateOn:'blur'}" required email-exists="$ctrl.user.Id" />
                 <span ng-show="instructorForm.email.$error.emailExists">אימייל תפוס</span>
@@ -43,7 +50,7 @@
 
             <div class="form-group" ng-show="$ctrl.role==='farmAdminHorse'">
                 <label>תפקיד</label>
-                <select class="form-control" ng-model="$ctrl.user.SubRole" >
+                <select class="form-control" ng-model="$ctrl.user.SubRole">
                     <option value="">בחר תפקיד</option>
                     <option value="worker">עובד כללי</option>
                     <option value="stableman">סייס</option>

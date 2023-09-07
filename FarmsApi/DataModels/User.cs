@@ -99,7 +99,10 @@ namespace FarmsApi.DataModels
         public double? Total { get; set; }
 
         public int? MainHorseId { get; set; }
-        
+
+        public string MaccabiCode { get; set; }
+
+        public string MaccabiCode1 { get; set; }
     }
 
 
@@ -197,7 +200,9 @@ namespace FarmsApi.DataModels
       
         public double? Total { get; set; }
 
+        public string MaccabiCode { get; set; }
 
+        public string MaccabiCode1 { get; set; }
 
     }
 }

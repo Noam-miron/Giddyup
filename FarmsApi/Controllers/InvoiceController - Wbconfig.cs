@@ -45,7 +45,7 @@
 
 //                var reqObjValidate = new
 //                {
-//                    developer_email = "tzahi556@gmail.com",
+//                    developer_email = "musicminor@gmail.com",
 //                    api_key = (string)Params.api_key
 
 //                };
@@ -77,7 +77,7 @@
 //                {
 //                    api_key = (string)Params.api_key,
 //                    //   api_email = (string)Params.api_email,
-//                    developer_email = "tzahi556@gmail.com",
+//                    developer_email = "musicminor@gmail.com",
 //                    sum = (decimal)Params.payment,
 //                    successUrl = SuccessUrlAshrai
 //                };
@@ -107,7 +107,7 @@
 //                {
 //                    api_key = (string)Params.api_key,
 
-//                    developer_email = "tzahi556@gmail.com",
+//                    developer_email = "musicminor@gmail.com",
 
 //                    successUrl = SuccessUrlToken + "&UserId=" + (string)Params.UserId
 //                    // successUrl = "https://www.giddyup.co.il/#/closetoken?aaa=5454545&UserId=" + (string)Params.UserId
@@ -137,7 +137,7 @@
 //                var reqObjAshrai = new
 //                {
 //                    api_key = (string)Params.api_key,
-//                    developer_email = "tzahi556@gmail.com",
+//                    developer_email = "musicminor@gmail.com",
 //                    sum = (decimal)Params.payment,
 //                    cc_token = (string)Params.cc_token,
 //                    cc_4_digits = (string)Params.cc_4_digits,
@@ -296,8 +296,8 @@
 //                    api_email = (string)Params.api_email,
 //                    ua_uuid = (string)Params.ua_uuid,
 
-//                    developer_email = "tzahi556@gmail.com",
-//                    developer_phone = "0505913817",
+//                    developer_email = "musicminor@gmail.com",
+//                    developer_phone = "0544249573",
 //                    type = DocType,
 //                    description = (bool)Params.isMasKabala ? "" : (string)Params.InvoiceDetails,
 //                    customer_name = (string)Params.customer_name,

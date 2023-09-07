@@ -73,6 +73,8 @@ namespace FarmsApi.DataModels
         public string Taz { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string MaccabiCode { get; set; }
+        public string MaccabiCode1 { get; set; }
         public string Count { get; set; }
         public string Invoice { get; set; }
         public DateTime? Start { get; set; }
@@ -80,6 +82,29 @@ namespace FarmsApi.DataModels
         public string Total { get; set; }
 
 
+    }
+
+    public class MaccabiReport
+    {
+        public int Id { get; set; }
+        public string IdNumber { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public DateTime? Start { get; set; }
+        public string Status { get; set; }
+        public string OfficeDetails { get; set; }
+    }
+
+    public class KlalitReport
+    {
+        public int Id { get; set; }
+        public string IdNumber { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public DateTime? Start { get; set; }
+        public string Status { get; set; }
+        public string HMO { get; set; }
+        public string OfficeDetails { get; set; }
     }
 
     public class DebtReport

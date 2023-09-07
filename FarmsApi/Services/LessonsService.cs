@@ -15,57 +15,46 @@ namespace FarmsApi.Services
         {
             var ReturnLessons = new JArray();
 
-
             //    JArray Instructor = JArray.Parse(resources);
+            var CurrentUser = UsersService.GetCurrentUser();
 
-            using (var Context = new Context())
-            {
-                var CurrentUser = UsersService.GetCurrentUser();
-                if (!IsFromCompletion)
-                    PopulateReturnLessons(ReturnLessons, Context, CurrentUser, StudentId, startDate, endDate, IsFromCompletion);
+                if(CurrentUser.Id==0)
+                    return null;
+                else if (!IsFromCompletion)
+                    PopulateReturnLessons(ReturnLessons, CurrentUser, StudentId, startDate, endDate, IsFromCompletion);
                 else
-                    PopulateReturnLessonsToComplete(ReturnLessons, Context, CurrentUser, StudentId, startDate, endDate, IsFromCompletion);
-            }
+                   PopulateReturnLessonsToComplete(ReturnLessons, CurrentUser, StudentId, startDate, endDate, IsFromCompletion);
+            
             return ReturnLessons;
         }
-        private static void PopulateReturnLessons(JArray ReturnLessons, DataModels.Context Context, User CurrentUser, int? StudentId, string startDate, string endDate, bool IsFromCompletion)
+        private static void PopulateReturnLessons(JArray ReturnLessons, User CurrentUser, int? StudentId, string startDate, string endDate, bool IsFromCompletion)
         {
             bool IsPrice = false;
             if (CurrentUser.Role == "sysAdmin" || CurrentUser.Role == "farmAdmin")
             {
-
                 IsPrice = true;
             }
 
             DateTime StartDate = startDate != null ? DateTime.Parse(startDate) : DateTime.Now.Date;
             DateTime EndDate = endDate != null ? DateTime.Parse(endDate).AddDays(1) : DateTime.Now.Date.AddDays(1);
 
+            List<LessonsResult> lessons;
 
+            using (var Context = new Context())
+            {
 
-            SqlParameter StudentIdPara = new SqlParameter("StudentId", (StudentId == null) ? -1 : StudentId);
-            SqlParameter Farm_IdPara = new SqlParameter("Farm_Id", CurrentUser.Farm_Id);
-            SqlParameter RolePara = new SqlParameter("Role", CurrentUser.Role);
-            SqlParameter StartDatePara = new SqlParameter("StartDate", StartDate);
-            SqlParameter EndDatePara = new SqlParameter("EndDate", EndDate);
-            SqlParameter IsPricePara = new SqlParameter("IsPrice", IsPrice);
-            var query = Context.Database.SqlQuery<LessonsResult>
-            ("GetStudentsLessonsList @StudentId,@Farm_Id,@Role,@StartDate,@EndDate,@IsPrice",
-            StudentIdPara, Farm_IdPara, RolePara, StartDatePara, EndDatePara, IsPricePara);
+                SqlParameter StudentIdPara = new SqlParameter("StudentId", (StudentId == null) ? -1 : StudentId);
+                SqlParameter Farm_IdPara = new SqlParameter("Farm_Id", CurrentUser.Farm_Id);
+                SqlParameter RolePara = new SqlParameter("Role", CurrentUser.Role);
+                SqlParameter StartDatePara = new SqlParameter("StartDate", StartDate);
+                SqlParameter EndDatePara = new SqlParameter("EndDate", EndDate);
+                SqlParameter IsPricePara = new SqlParameter("IsPrice", IsPrice);
+                var query = Context.Database.SqlQuery<LessonsResult>
+                ("GetStudentsLessonsList @StudentId,@Farm_Id,@Role,@StartDate,@EndDate,@IsPrice",
+                StudentIdPara, Farm_IdPara, RolePara, StartDatePara, EndDatePara, IsPricePara);
 
-            //try
-            //{
-            //    var lessons3 = query.ToList();
-            //}
-            //catch(Exception ex)
-            //{
-
-
-            //}
-
-
-            //try
-            //{
-            var lessons = query.ToList();
+                lessons = query.ToList();
+            }
             int lastId = 0;
             foreach (var Lesson in lessons)
             {
@@ -132,9 +121,6 @@ namespace FarmsApi.Services
                             //HearotStatus = Lesson.HearotStatus,
                             //Mashov = Lesson.Mashov
 
-
-
-
                         }));
                     }
                     lastId = Lesson.Id;
@@ -145,29 +131,20 @@ namespace FarmsApi.Services
                 }
             }
 
-            //}
-            //catch (Exception ex)
-            //{
-
-
-
-            //}
-
-
-
         }
 
-        private static void PopulateReturnLessonsToComplete(JArray ReturnLessons, DataModels.Context Context, User CurrentUser, int? StudentId, string startDate, string endDate, bool IsFromCompletion)
+        private static void PopulateReturnLessonsToComplete(JArray ReturnLessons, User CurrentUser, int? StudentId, string startDate, string endDate, bool IsFromCompletion)
         {
 
-
             var dt = new DataTable();
-            var conn = Context.Database.Connection;
-            var connectionState = conn.State;
-            if (connectionState != ConnectionState.Open) conn.Open();
-            using (var cmd = conn.CreateCommand())
+            using (var Context = new Context())
             {
-                cmd.CommandText = @" 
+                var conn = Context.Database.Connection;
+                var connectionState = conn.State;
+                if (connectionState != ConnectionState.Open) conn.Open();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @" 
                                   Select t3.*,u.FirstName + ' ' + u.LastName as FullName,t4.InstructorName ,
                                  t4.MainDetails
 
@@ -199,38 +176,39 @@ namespace FarmsApi.Services
 
 
 
-                //cmd.CommandText = @" 
-                //        Select t3.*,MainDetails='',u.FirstName + ' ' + u.LastName as FullName,ui.FirstName + ' ' + ui.LastName as InstructorName from (
+                    //cmd.CommandText = @" 
+                    //        Select t3.*,MainDetails='',u.FirstName + ' ' + u.LastName as FullName,ui.FirstName + ' ' + ui.LastName as InstructorName from (
 
-                //        Select t1.Id,completionReq = t1.CounterStatus - coalesce(t2.CounterStatus, 0) from (
-                //        Select st.User_Id as Id,Count(Status) as CounterStatus from StudentLessons st 
-                //        where (st.Status in('completionReq','completionReqCharge'))
-                //        Group by st.User_Id
-                //        ) t1
+                    //        Select t1.Id,completionReq = t1.CounterStatus - coalesce(t2.CounterStatus, 0) from (
+                    //        Select st.User_Id as Id,Count(Status) as CounterStatus from StudentLessons st 
+                    //        where (st.Status in('completionReq','completionReqCharge'))
+                    //        Group by st.User_Id
+                    //        ) t1
 
-                //        left join (
-                //        Select st.User_Id as Id,Count(Status) as CounterStatus from StudentLessons st 
-                //        where (st.Status = 'completion')
-                //        Group by st.User_Id
-                //        )t2	 on t2.Id=t1.Id
-                //        )t3	
-                //        inner join Users u on t3.Id = u.Id and u.Deleted=0 and u.Active='active' 
-                //        inner join ( Select *,ROW_NUMBER() OVER(Partition by User_Id ORDER BY Lesson_Id desc) as RowNum from StudentLessons where Status in('completionReq','completionReqCharge')) t4 on t4.User_Id=t3.Id and t4.RowNum = 1
-                //        inner join Lessons l on l.Id = t4.Lesson_Id
-                //        inner join Users ui on ui.Id = l.Instructor_Id
+                    //        left join (
+                    //        Select st.User_Id as Id,Count(Status) as CounterStatus from StudentLessons st 
+                    //        where (st.Status = 'completion')
+                    //        Group by st.User_Id
+                    //        )t2	 on t2.Id=t1.Id
+                    //        )t3	
+                    //        inner join Users u on t3.Id = u.Id and u.Deleted=0 and u.Active='active' 
+                    //        inner join ( Select *,ROW_NUMBER() OVER(Partition by User_Id ORDER BY Lesson_Id desc) as RowNum from StudentLessons where Status in('completionReq','completionReqCharge')) t4 on t4.User_Id=t3.Id and t4.RowNum = 1
+                    //        inner join Lessons l on l.Id = t4.Lesson_Id
+                    //        inner join Users ui on ui.Id = l.Instructor_Id
 
-                //        where    (t3.completionReq > 0) and('" + CurrentUser.Role.ToString() + "'!='instructor' or " + CurrentUser.Id.ToString() + "=l.Instructor_Id ) and (u.Farm_Id=" + CurrentUser.Farm_Id + " Or 0=" + CurrentUser.Farm_Id + ")  order by Instructor_Id";
-
-
+                    //        where    (t3.completionReq > 0) and('" + CurrentUser.Role.ToString() + "'!='instructor' or " + CurrentUser.Id.ToString() + "=l.Instructor_Id ) and (u.Farm_Id=" + CurrentUser.Farm_Id + " Or 0=" + CurrentUser.Farm_Id + ")  order by Instructor_Id";
 
 
 
-                using (var reader = cmd.ExecuteReader())
-                {
-                    dt.Load(reader);
+
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        dt.Load(reader);
+                    }
+                    conn.Close();
                 }
-                conn.Close();
-
+            }
                 foreach (DataRow row in dt.Rows)
                 {
                     ReturnLessons.Add(JObject.FromObject(new
@@ -245,7 +223,7 @@ namespace FarmsApi.Services
 
                 }
 
-            }
+            
 
 
 
@@ -1309,18 +1287,10 @@ namespace FarmsApi.Services
                 DateTime StartDate = startDate != null ? DateTime.Parse(startDate) : DateTime.Now.Date;
                 var CurrentUser = UsersService.GetCurrentUser();
 
-
-
-
-
                 var HorsesList = Context.Horses.Where(x => !x.Deleted && x.Farm_Id == CurrentUser.Farm_Id && x.Ownage == "school" && (x.Active == "active" || x.Active == null));
                 var HorsesMale = HorsesList.Where(x => x.Gender == "male").ToList();
                 var HorsesFeMale = HorsesList.Where(x => x.Gender == "female").ToList();
                 var HorsesCastrated = HorsesList.Where(x => x.Gender == "castrated").ToList();
-
-
-
-
 
                 SqlParameter Farm_IdParam = new SqlParameter("Farm_Id", CurrentUser.Farm_Id);
                 SqlParameter StartDateParam = new SqlParameter("StartDate", StartDate);
@@ -1329,10 +1299,7 @@ namespace FarmsApi.Services
                 var query = Context.Database.SqlQuery<HorsesLessonShibutz>
                 (" GetStudentsLessonsForShibutz @Farm_Id, @StartDate, @EndDate", Farm_IdParam, StartDateParam, EndDateParam);
 
-
-
                 var DataFromLessons = query.ToList();
-
 
                 if (isDelete)
                 {
@@ -1342,78 +1309,42 @@ namespace FarmsApi.Services
 
                         if (sl != null)
                         {
-
                             sl.HorseId = 0;
                             Context.Entry(sl).State = System.Data.Entity.EntityState.Modified;
                         }
-
                     }
-
                 }
                 else
                 {
+                    for (int i = 0; i < DataFromLessons.Count; i++)
+                    {
+                        var item = DataFromLessons[i];
+
+                        if (item.MainHorseId != null && item.HorseId == 0 && GetIfHorseValidCurrentDate(item.MainHorseId, DataFromLessons, item, 
+                                                                HorsesMale, HorsesFeMale, HorsesCastrated))
+                        {
+                            item.HorseId = (int)item.MainHorseId;
+                        }
+                    }
 
                     for (int i = 0; i < DataFromLessons.Count; i++)
                     {
 
-
-
                         var item = DataFromLessons[i];
 
-                        if (item.HorseId != 0) continue;
-
-
-                        if (item.MainHorseId != null)
-                        {
-
-                            bool IsNotMoreThenHourInDayOrRETZEF = GetIfHorseValidCurrentDate(item.MainHorseId, DataFromLessons, item,
-                                HorsesMale, HorsesFeMale, HorsesCastrated);
-
-
-                            if (IsNotMoreThenHourInDayOrRETZEF) item.HorseId = (int)item.MainHorseId;
-                            else
-                            {
-
-                                foreach (var OptionalHorse in HorsesList)
-                                {
-                                    IsNotMoreThenHourInDayOrRETZEF = GetIfHorseValidCurrentDate(OptionalHorse.Id, DataFromLessons, item,
-                                          HorsesMale, HorsesFeMale, HorsesCastrated);
-
-
-                                    if (IsNotMoreThenHourInDayOrRETZEF)
-                                    {
-                                        item.HorseId = OptionalHorse.Id;
-                                        break;
-                                    }
-                                }
-
-
-                            }
-
-
-                        }
-                        else
+                        if (item.HorseId == 0)
                         {
                             foreach (var OptionalHorse in HorsesList)
                             {
-                                bool IsNotMoreThenHourInDayOrRETZEF = GetIfHorseValidCurrentDate(OptionalHorse.Id, DataFromLessons, item,
-                                       HorsesMale, HorsesFeMale, HorsesCastrated);
 
-
-                                if (IsNotMoreThenHourInDayOrRETZEF)
+                                if (GetIfHorseValidCurrentDate(OptionalHorse.Id, DataFromLessons, item,
+                                       HorsesMale, HorsesFeMale, HorsesCastrated))
                                 {
                                     item.HorseId = OptionalHorse.Id;
                                     break;
                                 }
                             }
-
-
                         }
-
-
-
-
-
                     }
 
 
@@ -1426,18 +1357,11 @@ namespace FarmsApi.Services
 
                             if (sl != null)
                             {
-
                                 sl.HorseId = item.HorseId;
                                 Context.Entry(sl).State = System.Data.Entity.EntityState.Modified;
                             }
-
-
                         }
-
-
-
                     }
-
                 }
 
                 Context.SaveChanges();
@@ -1450,7 +1374,7 @@ namespace FarmsApi.Services
            List<Horse> HorsesMale, List<Horse> HorsesFeMale, List<Horse> HorsesCastrated)
         {
             int HourInDay = 4 * 60;
-            int HourRetzef = 2 * 60;
+            //int HourRetzef = 2 * 60;
             // בדיקה אם הסוס תפוס באותה שעה
             var ExistInThisHour = DataFromLessons.Where(x => x.HorseId == HorseId && item.Start >= x.Start && item.Start < x.End).FirstOrDefault();
             if (ExistInThisHour != null) return false;
@@ -1461,36 +1385,36 @@ namespace FarmsApi.Services
             if (ExistMoreThenHoursInDay + item.MinuteOfLesson > HourInDay) return false;
 
 
-            // בדיקת רצף
-            var TotalMinutes = 0;
-            var ExistMoreThenHoursInRetzef = DataFromLessons.Where(x => x.HorseId == HorseId).OrderBy(x => x.Start).ToList();
-            for (int i = 0; i < ExistMoreThenHoursInRetzef.Count; i++)
-            {
+            //// בדיקת רצף
+            //var TotalMinutes = 0;
+            //var ExistMoreThenHoursInRetzef = DataFromLessons.Where(x => x.HorseId == HorseId).OrderBy(x => x.Start).ToList();
+            //for (int i = 0; i < ExistMoreThenHoursInRetzef.Count; i++)
+            //{
 
-                if (i < ExistMoreThenHoursInRetzef.Count)
-                {
-                    TotalMinutes = ExistMoreThenHoursInRetzef[i].MinuteOfLesson;
+            //    if (i < ExistMoreThenHoursInRetzef.Count)
+            //    {
+            //        TotalMinutes = ExistMoreThenHoursInRetzef[i].MinuteOfLesson;
 
-                    for (int m = i; m < ExistMoreThenHoursInRetzef.Count; m++)
-                    {
+            //        for (int m = i; m < ExistMoreThenHoursInRetzef.Count; m++)
+            //        {
 
-                        if (m < ExistMoreThenHoursInRetzef.Count - 1 && ExistMoreThenHoursInRetzef[m].End == ExistMoreThenHoursInRetzef[m + 1].Start)
-                        {
-                            TotalMinutes += ExistMoreThenHoursInRetzef[m + 1].MinuteOfLesson;
+            //            if (m < ExistMoreThenHoursInRetzef.Count - 1 && ExistMoreThenHoursInRetzef[m].End == ExistMoreThenHoursInRetzef[m + 1].Start)
+            //            {
+            //                TotalMinutes += ExistMoreThenHoursInRetzef[m + 1].MinuteOfLesson;
 
-                            if (TotalMinutes > HourRetzef) return false;
+            //                if (TotalMinutes > HourRetzef) return false;
 
-                        }
-                        else
-                        {
-                            TotalMinutes = ExistMoreThenHoursInRetzef[i].MinuteOfLesson;
+            //            }
+            //            else
+            //            {
+            //                TotalMinutes = ExistMoreThenHoursInRetzef[i].MinuteOfLesson;
 
-                        }
-                    }
+            //            }
+            //        }
 
-                }
+            //    }
 
-            }
+            //}
 
 
             var ExistGenderInLesson = DataFromLessons.Where(x => x.Lesson_Id == item.Lesson_Id && x.HorseId != 0).ToList();

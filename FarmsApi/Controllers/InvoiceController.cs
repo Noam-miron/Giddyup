@@ -28,12 +28,12 @@ namespace FarmsApi.Controllers
             lg.TimeStamp = DateTime.Now;
             lg.Request = Params.ToString();
             lg.StudentId = (int)Params.UserId;
-            User CurrentUser = UsersService.GetCurrentUser(); 
+            User CurrentUser = UsersService.GetCurrentUser();
             lg.UserId = CurrentUser.Id;
 
             try
             {
-
+                string MasterApiKey = ConfigurationSettings.AppSettings["MasterApiKey"].ToString();
 
                 string IsProduction = ConfigurationSettings.AppSettings["IsProduction"].ToString();
 
@@ -70,7 +70,8 @@ namespace FarmsApi.Controllers
 
                     var reqObjValidate = new
                     {
-                        developer_email = "tzahi556@gmail.com",
+                        developer_email = "musicminor@gmail.com",
+                        created_by_api_key= MasterApiKey,
                         api_key = (string)Params.api_key
 
                     };
@@ -85,7 +86,7 @@ namespace FarmsApi.Controllers
                     HttpContent content = new StringContent(DATA, UTF8Encoding.UTF8, "application/json");
                     HttpResponseMessage messge = client.PostAsync(SlikaUrl, content).Result;
 
-                   
+
                     dynamic response = "";
                     if (messge.IsSuccessStatusCode)
                     {
@@ -105,8 +106,9 @@ namespace FarmsApi.Controllers
                     var reqObjAshrai = new
                     {
                         api_key = (string)Params.api_key,
-                        //   api_email = (string)Params.api_email,
-                        developer_email = "tzahi556@gmail.com",
+                        //api_email = (string)Params.api_email,
+                        created_by_api_key = MasterApiKey,
+                        developer_email = "musicminor@gmail.com",
                         sum = (decimal)Params.payment,
                         successUrl = SuccessUrlAshrai
                     };
@@ -123,7 +125,7 @@ namespace FarmsApi.Controllers
                     HttpContent content = new StringContent(DATA, UTF8Encoding.UTF8, "application/json");
                     HttpResponseMessage messge = client.PostAsync(SlikaUrl, content).Result;
 
-                    
+
 
                     dynamic response = "";
                     if (messge.IsSuccessStatusCode)
@@ -143,8 +145,8 @@ namespace FarmsApi.Controllers
                     var reqObjAshrai = new
                     {
                         api_key = (string)Params.api_key,
-
-                        developer_email = "tzahi556@gmail.com",
+                        created_by_api_key = MasterApiKey,
+                        developer_email = "musicminor@gmail.com",
 
                         successUrl = SuccessUrlToken + "&UserId=" + (string)Params.UserId
                     };
@@ -180,7 +182,8 @@ namespace FarmsApi.Controllers
                     var reqObjAshrai = new
                     {
                         api_key = (string)Params.api_key,
-                        developer_email = "tzahi556@gmail.com",
+                        created_by_api_key = MasterApiKey,
+                        developer_email = "musicminor@gmail.com",
                         sum = (decimal)Params.payment,
                         cc_token = (string)Params.cc_token,
                         cc_4_digits = (string)Params.cc_4_digits,
@@ -222,7 +225,7 @@ namespace FarmsApi.Controllers
                             Params.cc_payment_num = 1;
                             lg.Details = "סליקה טוקן";
                             lg.Response = responseToken.ToString();
-                          
+
                             lg.ResponseTimeStamp = DateTime.Now;
                             return sendInvoice(Params);
 
@@ -261,7 +264,7 @@ namespace FarmsApi.Controllers
                                 payment_type = 91,
                                 date = (string)Params.payment_date,
                                 payment = (decimal)Params.payment,
-                                wt_vendor= (string)Params.payment_type,
+                                wt_vendor = (string)Params.payment_type,
                             }
 
                             );
@@ -290,7 +293,7 @@ namespace FarmsApi.Controllers
                                 Payment.Add(new
                                 {
                                     payment_type = 2,
-                                    date = ((DateTime)Checks[i.ToString()]["checks_date"]).ToLocalTime().ToShortDateString(),// tzahi change//Params.payment_date,
+                                    date = ((DateTime)Checks[i.ToString()]["checks_date"]).ToString("dd'/'MM'/'yyyy"),// tzahi change//Params.payment_date,
                                     payment = (decimal)(Checks[i.ToString()]["checks_sum"]),//(decimal)Params.payment,
 
                                     checks_bank_name = Checks[i.ToString()]["checks_bank_name"].ToString(),//(string)Params.checks_bank_name,
@@ -419,9 +422,9 @@ namespace FarmsApi.Controllers
 
 
                                 var Pays = Context.Payments.Where(x => (parentList).Contains(x.doc_uuid)).ToList();
-                                if(Pays.Count > 1)
+                                if (Pays.Count > 1)
                                 {
-                                  
+
                                     foreach (var Pay in Pays)
                                     {
                                         bool IsExist = Pays.Any(x => x.doc_type != Pay.doc_type);
@@ -430,7 +433,7 @@ namespace FarmsApi.Controllers
                                         {
                                             lg.Details = " תקלה בהפקת זיכוי " + (string)Params.payment_type;
                                             lg.RequestTimeStamp = DateTime.Now;
-                                           
+
                                             lg.Response = " תקלה בהפקת זיכוי ";
                                             lg.ResponseTimeStamp = DateTime.Now;
                                             return Ok("-2");
@@ -444,8 +447,8 @@ namespace FarmsApi.Controllers
 
                                 //צחי שינה שיש ריבוי חשבוניות לזיכוי
                                 var item = Context.Payments.Where(x => (parentList).Contains(x.doc_uuid)).FirstOrDefault();
-                                
-                                if(item!=null)
+
+                                if (item != null)
                                 {
                                     var doc_type = item.doc_type;
 
@@ -484,7 +487,7 @@ namespace FarmsApi.Controllers
 
                                         listProduct[0] = temp;
 
-                                       
+
 
                                         Payment.Add(
                                                      new
@@ -514,18 +517,20 @@ namespace FarmsApi.Controllers
                     }
 
 
-
-
                     var reqObj = new
                     {
                         api_key = (string)Params.api_key,
+                        created_by_api_key = MasterApiKey,
                         api_email = (string)Params.api_email,
                         ua_uuid = (string)Params.ua_uuid,
 
-                        developer_email = "tzahi556@gmail.com",
-                        developer_phone = "0505913817",
+                        developer_email = "musicminor@gmail.com",
+                        developer_phone = "0544249573",
                         type = DocType,
-                        description = (DocType!=400) ? "": (string)Params.InvoiceDetails,
+                        description = (DocType != 400) ? "" : (string)Params.InvoiceDetails,
+
+                        
+                        date = Params.Date.ToString("dd/MM/yyyy"),
 
                         customer_email = (string)Params.customer_email,
                         customer_address = (string)Params.customer_address,
@@ -534,7 +539,7 @@ namespace FarmsApi.Controllers
 
                         customer_name = (string)Params.customer_name,
                         customerAction = "ASSOC_CREATE",
-                        customer_crn =  (string.IsNullOrEmpty((string)Params.temp_customer_crn))? (string)Params.customer_crn: (string)Params.temp_customer_crn,
+                        customer_crn = (string.IsNullOrEmpty((string)Params.temp_customer_crn)) ? (string)Params.customer_crn : (string)Params.temp_customer_crn,
                         c_accounting_num = (string)Params.c_accounting_num,
                         tag_id = (string)Params.tag_id,
 
@@ -564,7 +569,7 @@ namespace FarmsApi.Controllers
             {
                 lg.Exception = ex.Message;
                 DocCreation doc = new DocCreation();
-                dynamic response = doc.execute(Constants.ENV_TEST , null); // "{errMsg:2220}";
+                dynamic response = doc.execute(Constants.ENV_TEST, null); // "{errMsg:2220}";
                 return Ok(response);
 
             }
@@ -601,11 +606,11 @@ namespace FarmsApi.Controllers
                     return 3;
                 case "bank transfer":
                     return 4;
-             
+
 
                 default:
                     return 1;
-                   
+
             }
         }
 
@@ -614,11 +619,15 @@ namespace FarmsApi.Controllers
             var reqObjZikuy = new
             {
                 api_key = (string)Params.api_key,
+                created_by_api_key = "aca36103e816eae2b9986b952f92881b309c3b6290813ebd1469fd350cd48746",
                 api_email = (string)Params.api_email,
                 ua_uuid = (string)Params.ua_uuid,
 
-                developer_email = "tzahi556@gmail.com",
-                developer_phone = "0505913817",
+                developer_email = "musicminor@gmail.com",
+                developer_phone = "0544249573",
+
+                date = Params.Date.ToString("dd/MM/yyyy"),
+
                 type = DocType,
                 description = "",//(bool)Params.isMasKabala ? "" : (string)Params.InvoiceDetails,
 

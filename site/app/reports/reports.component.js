@@ -16,12 +16,16 @@
         self.ReportManger = _ReportManger;
         self.ReportHMO = _ReportHMO;
         self.ReportDebt = _ReportDebt;
+        self.ReportMaccabi = _ReportMaccabi;
+        self.ReportKlalit = _ReportKlalit;
         self.ReportInsructor = _ReportInsructor;
         self.sortArrayOfObjects = _sortArrayOfObjects;
 
-
+        self.getAge = _getAge;
         self.getHebStatus = _getHebStatus;
         self.getHebHMO = _getHebHMO;
+        self.getHebStyle = _getHebStyle;
+        self.getHebGender = _getHebGender;
         self.getInstructorCounter = _getInstructorCounter;
       //  self.getTotalPerStyle = _getTotalPerStyle;
         self.getRound = _getRound;
@@ -31,7 +35,9 @@
         self.reports = [
             { name: 'רשימת תלמידים כולל פרטים', callback: self.studentsReport },
             { name: 'רשימת שיעורים', callback: self.lessonsReport },
-            { name: 'רשימת סוסים + טיפולים עתידיים', callback: self.horsesReport }
+            { name: 'רשימת סוסים + טיפולים עתידיים', callback: self.horsesReport },
+            { name: 'דוח מכבי', callback: self.ReportMaccabi },
+            { name: 'דוח כללית', callback: self.ReportKlalit }
         ]
 
 
@@ -46,7 +52,67 @@
         }
 
 
+        function _ReportMaccabi() {
 
+            usersService.reportMaccabi(moment(self.fromDate).format('YYYYMMDD'), moment(self.toDate).format('YYYYMMDD')).then(function (res) {
+
+                var data = [];
+                data.push([
+                    'ת.ז.',
+                    'שם פרטי',
+                    'שם משפחה',
+                    'תאריך',
+                    'סטטוס',
+                    'הערות משרד',
+                ]);
+
+                for (var i = 0; i < res.length; i++) {
+
+                    data.push([
+                        res[i].IdNumber,
+                        res[i].FirstName,
+                        res[i].LastName,
+                        res[i].Start,
+                        self.getHebStatus(res[i]),
+                        res[i].OfficeDetails
+                    ]);
+
+                }
+                _getReport(data);
+            });
+        }
+
+        function _ReportKlalit() {
+
+            usersService.reportKlalit(moment(self.fromDate).format('YYYYMMDD'), moment(self.toDate).format('YYYYMMDD')).then(function (res) {
+
+                var data = [];
+                data.push([
+                    'ת.ז.',
+                    'שם פרטי',
+                    'שם משפחה',
+                    'תאריך',
+                    'סטטוס',
+                    'קופת חולים',
+                    'הערות משרד',
+                ]);
+
+                for (var i = 0; i < res.length; i++) {
+
+                    data.push([
+                        res[i].IdNumber,
+                        res[i].FirstName,
+                        res[i].LastName,
+                        res[i].Start,
+                        self.getHebStatus(res[i]),
+                        self.getHebHMO(res[i]),
+                        res[i].OfficeDetails
+                    ]);
+
+                }
+                _getReport(data);
+            });
+        }
 
         function _ReportInsructor() {
 
@@ -363,6 +429,8 @@
                         var StudentId = res[i].Id;
                         var FirstName = res[i].FirstName;
                         var LastName = res[i].LastName;
+                        var MaccabiCode = res[i].MaccabiCode == null ? "" : res[i].MaccabiCode;
+                        var MaccabiCode1 = res[i].MaccabiCode1 == null ? "" : res[i].MaccabiCode1;
                         var Invoice = res[i].Invoice;
                         var Start = moment(res[i].Start).format('DD/MM/YYYY');
                         var Total = res[i].Total;
@@ -394,6 +462,8 @@
                                 TableMacabi += "<tr><td>" + Taz
                                     + "</td><td style='text-align:right'>" + FirstName
                                     + "</td><td style='text-align:right'>" + LastName
+                                    + "</td><td style='text-align:right'>" + MaccabiCode
+                                    + "</td><td style='text-align:right'>" + MaccabiCode1
                                     + "</td><td style='direction:ltr;text-align:right'>" + Total// פה לשים יתרת שיעורים
                                     + "</td><td>" + CountMacabi.toString()
                                     + "</td><td style='text-align:right'>" + StartDetailsMacabi + "</td ></tr>";
@@ -404,9 +474,9 @@
                                     + "</td><td style='text-align:right'>" + LastName
                                     + "</td><td>" + InvoiceDetails
                                     + "</td><td>" + ((Count > 0) ? Count.toString() : "")
-                                    + "</td><td style='text-align:right'>" + StartDetails + "</td>"
-                                    + "</td><td>" + ((CountNoPay > 0) ? CountNoPay.toString() : "")
-                                    + "</td><td style='text-align:right'>" + StartDetailsNoPay + "</td></tr>";
+                                    + "</td><td style='text-align:right'>" + StartDetails + "</td></tr>";
+                                    //+ "</td><td>" + ((CountNoPay > 0) ? CountNoPay.toString() : "")
+                                    //+ "</td><td style='text-align:right'>" + StartDetailsNoPay + "</td></tr>";
 
 
 
@@ -418,9 +488,9 @@
                                     + "</td><td style='text-align:right'>" + LastName
                                     + "</td><td>" + InvoiceDetails
                                     + "</td><td>" + ((Count > 0) ? Count.toString() : "")
-                                    + "</td><td style='text-align:right'>" + StartDetails + "</td>"
-                                    + "</td><td>" + ((CountNoPay > 0) ? CountNoPay.toString() : "")
-                                    + "</td><td style='text-align:right'>" + StartDetailsNoPay + "</td></tr>";
+                                    + "</td><td style='text-align:right'>" + StartDetails + "</td></tr>";
+                                    //+ "</td><td>" + ((CountNoPay > 0) ? CountNoPay.toString() : "")
+                                    //+ "</td><td style='text-align:right'>" + StartDetailsNoPay + "</td></tr>";
 
                             StartDetails = "";
                             StartDetailsNoPay = "";
@@ -1582,7 +1652,7 @@
 
             }
 
-
+            //usersService.getStudents_Test().then(function (students) {
             usersService.getUsers('student').then(function (students) {
                 var data = [];
 
@@ -1644,8 +1714,11 @@
                         'סגנון רכיבה',
                         'חבר נבחרת',
                         'קופ״ח',
+                        'מדריך קבוע',
                         'סוג תשלום',
                         'עלות',
+                        'יתרה',
+
                     ]);
                     students.forEach(function (student) {
                         data.push([
@@ -1661,11 +1734,14 @@
                             student.ParentName,
                             student.ParentName2,
                             student.BirthDate ? new Date(student.BirthDate) : null,
-                            student.Style,
-                            student.TeamMember,
-                            student.HMO,
-                            student.PayType,
+                            _getHebStyle(student),
+                            student.TeamMember ? student.TeamMember == 'yes' ? 'כן' : 'לא' : '',
+                            _getHebHMO(student),
+                            student.MainInstructorId,
+                            student.PayType=='lessonCost' ? 'פר שעור' : 'חודשי',
                             student.Cost,
+                            0,
+                          
                         ]);
                     });
 
@@ -1718,14 +1794,19 @@
                         'מס לקוח',
                         'ת.ז.',
                         'תאריך',
-                        'שעה',
+                        'שעת התחלה',
+                        'שעת סיום',
                         'שם מדריך',
-                        'שם תלמיד',
+                        'שם פרטי תלמיד',
+                        'שם משפחה תלמיד',
                         'סטטוס',
                         'קופת חולים',
                         'סוג השיעור',
                         'עלות',
-                        'הערות משרד'
+                        'הערות משרד',
+                        'סגנון רכיבה',
+                        'גיל',
+                        'מין',
                     ]);
 
 
@@ -1738,37 +1819,40 @@
                             var instructorName = getName(lesson.resourceId);
                             var student = getUser(status.StudentId);
                             if (student) {
-                                var studentName = student.FirstName + " " + student.LastName;
+                                var studentFirstName = student.FirstName
+                                var studentLastName = student.LastName;
                                 var studentClientNumber = student.ClientNumber || "";
                                 var studentIdNumber = student.IdNumber;
-
                                 //var studentHMO = status.HMO;
                                 //var studentCost = student.Cost;
                                 //  debugger
-                                var studentHMO = status.HMO;
                                 var studentCost = status.LessPrice;
 
-                                var startHour = (new Date(lesson.start)).toLocaleTimeString();
-                                var endHour = (new Date(lesson.end)).toLocaleTimeString();
+                                var startHour = (new Date(lesson.start)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                var endHour = (new Date(lesson.end)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-                                startHour = (startHour.indexOf(':') == 1) ? "0" + startHour.substring(0, 4) : startHour.substring(0, 5);
-                                endHour = (endHour.indexOf(':') == 1) ? "0" + endHour.substring(0, 4) : endHour.substring(0, 5);
+                                //startHour = (startHour.indexOf(':') == 1) ? "0" + startHour.substring(0, 4) : startHour.substring(0, 5);
+                                //endHour = (endHour.indexOf(':') == 1) ? "0" + endHour.substring(0, 4) : endHour.substring(0, 5);
 
 
-
-                                if (instructorName && studentName) {
+                                if (instructorName && studentFirstName) {
                                     data.push([
                                         studentClientNumber,
                                         studentIdNumber,
                                         new Date(lesson.start),
-                                        startHour + ' - ' + endHour,
+                                        startHour,// + ' - ' + 
+                                        endHour,
                                         instructorName,
-                                        studentName,
+                                        studentFirstName,
+                                        studentLastName,
                                         self.getHebStatus(status),
-                                        self.getHebHMO(studentHMO),
+                                        self.getHebHMO(student),
                                         self.getPartaniK(lesson.statuses, status.StudentId),
                                         status.LessPrice,
                                         status.OfficeDetails,
+                                        self.getHebStyle(student),
+                                        self.getAge(student),
+                                        self.getHebGender(student),
                                     ]);
                                 }
                             }
@@ -1859,40 +1943,121 @@
             // return moment(event).isAfter(moment());
         }
 
-        function _getHebHMO(studentHMO) {
-            switch (studentHMO) {
+        function _getHebStyle(student) {
+
+
+            switch (student.Style) {
+
+                case 'privateTreatment':
+                    return 'טיפולי פרטי'
+                case 'western':
+                    return 'מערבי'
+                case 'reining':
+                    return 'ריינינג'
+                case 'karting':
+                    return 'קאטינג'
+                case 'english':
+                    return 'אינגליש'
+                case 'course':
+                    return 'קורס מדריכים'
+                case 'camp':
+                    return 'מחנה רכיבה'
+                case 'phizi':
+                    return 'פיזיותרפיה'
+                case 'horseHolder':
+                    return 'אחזקת סוס-פנסיון'
+                case 'treatmentPsychological3-9':
+                    return 'טיפול פסיכולוגי 3-9'
+                case 'treatmentPsychological9-18':
+                    return 'טיפול פסיכולוגי 9-18'
+                case 'treatmentPsychological':
+                    return 'טיפול פסיכולוגי'
+                case 'treatmentAnimal':
+                    return 'טיפול בעזרת בעלי חיים'
+                case 'parentGuidance':
+                    return 'הדרכת הורים'
+                case 'treatmentSwimming':
+                    return 'שחייה טיפוללית'
+                case 'treatmentSport':
+                    return 'ספורט טיפולי'
+                case 'treatmentArt':
+                    return 'תראפיה באומנות'
+                case 'treatmentMusic':
+                    return 'תראפיה במוזיקה'
+                case 'treatmentPsychoDrama':
+                    return 'פסיכודרמה'
+                case 'treatmentMovement':
+                    return 'טיפול בתנועה'
+                case 'tiyul':
+                    return 'טיול'
+                case 'treatment':
+                    return 'רכיבה טיפולית'
+                case 'extreme':
+                    return 'אקסטרים'
+                case 'carriage':
+                    return 'רכיבת כרכרות אתגרית'
+                case 'allAround':
+                    return 'אול אראונד'
+                case 'privateTreatmentAnimal':
+                    return 'טיפול בעזרת בעלי חיים פרטי'
+                case 'privateTreatmentGroup':
+                    return 'טיפולי קבוצתי'
+                default:
+                    return ''
+            }
+
+        }
+
+        function _getHebGender(student) {
+
+            switch (student.Gender) {
+
+                case 0:
+                    return 'נקבה'
+                case 1:
+                    return 'זכר'
+                default:
+                    return ''
+            }
+
+}
+
+        function _getAge(student) {
+
+
+            if (!student.BirthDate) return "0";
+
+            var diffyear = (moment()).diff(moment(student.BirthDate), 'year', true);
+
+            if (isNaN(diffyear)) return "0";
+
+            return Math.round(diffyear);
+
+        }
+        
+
+        function _getHebHMO(student) {
+            switch (student.HMO) {
 
                 case 'maccabiGold':
                     return 'מכבי זהב'
                 case 'maccabiSheli':
                     return 'מכבי שלי'
-
-                case 'klalit':
-                    return 'כללית'
-
                 case 'klalitPlatinum':
                     return 'כללית פלטניום'
-
                 case 'klalitDikla':
                     return 'כללית דקלה'
-
+                case 'klalit':
+                    return 'כללית מושלם'
                 case 'meuhedet':
                     return 'מאוחדת'
-
                 case 'leumit':
                     return 'לאומית'
-
-
-
-
-
-
 
                 default:
                     return ''
             }
         }
-
 
         function _horsesReport() {
             horsesService.getHorsesReport(2).then(function (horses) {
@@ -1956,8 +2121,6 @@
                 _getReport(data);
             });
         }
-
-
 
         function _getShoeingDate(horse) {
 

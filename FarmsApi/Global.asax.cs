@@ -36,17 +36,17 @@ namespace FarmsApi
                 int hour = moment.Hour;
 
 
-                if (hour == 7)
+                if (hour == 1)
                 {
                     CommonTasks Tasking = new CommonTasks();
 
-                    if (day == 1) Tasking.AddExpenseToHorseLanders();
+                    //if (day == 1) Tasking.AddExpenseToHorseLanders();
 
-                    Tasking.InsertChecksToMas();
+                    //Tasking.InsertChecksToMas();
 
                     Tasking.InsertAshraisToMas();
 
-                    Tasking.InsertSchedularToken();
+                    //Tasking.InsertSchedularToken();
 
                 }
 
@@ -92,12 +92,14 @@ namespace FarmsApi
                 int hour = moment.Hour;
 
 
-                if (hour == 9)
+                if (hour == 4)
                 {
                     CommonTasks Tasking = new CommonTasks();
 
-                    if (day == 1) Tasking.AddExpenseToHorseLanders();
-                    Tasking.InsertChecksToMas();
+                    //if (day == 1) Tasking.AddExpenseToHorseLanders();
+                    //Tasking.InsertChecksToMas();
+
+                    Tasking.InsertAshraisToMas();
 
 
                 }

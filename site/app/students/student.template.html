@@ -229,7 +229,7 @@
                     </div>
 
                     <div class="form-group">
-                        
+
                         <label>מספר לקוח</label>
                         <input type="text" name="idNumber" class="form-control" ng-model="$ctrl.user.ClientNumber" />
                     </div>
@@ -311,13 +311,29 @@
 
 
 
-                    <div class="form-group" ng-if="$ctrl.user.Style.indexOf('treatment')!=-1 && ['farmAdminHorse','vetrinar','shoeing'].indexOf($ctrl.role)==-1">
+                    <div class="form-group" ng-if="$ctrl.user.Style.indexOf('treatment')!=-1 && $ctrl.user.Style != null && ['farmAdminHorse','vetrinar','shoeing'].indexOf($ctrl.role)==-1">
                         <label>קופ"ח</label>
                         <select class="form-control" ng-options="HMO.id as HMO.name for HMO in $ctrl.HMOs"
                                 ng-model="$ctrl.user.HMO" ng-change="$ctrl.changeLessonsData()" required>
                             <option value="">בחר קופת חולים</option>
                         </select>
                     </div>
+                    <div class="form-group" ng-if="$ctrl.user.Style.indexOf('carriage')!=-1 && ['farmAdminHorse','vetrinar','shoeing'].indexOf($ctrl.role)==-1">
+                        <label>קופ"ח</label>
+                        <select class="form-control" ng-options="HMO.id as HMO.name for HMO in $ctrl.HMOs"
+                                ng-model="$ctrl.user.HMO" ng-change="$ctrl.changeLessonsData()">
+                            <option value="">בחר קופת חולים</option>
+                        </select>
+                    </div>
+                    <div class="form-group" ng-if="$ctrl.user.HMO != null && $ctrl.user.HMO.indexOf('maccabi')!=-1 && ['farmAdminHorse','vetrinar','shoeing'].indexOf($ctrl.role)==-1">
+                        <label>קוד מחלקה מכבי</label>
+                        <input type="text" name="MaccabiCode" class="form-control" ng-model="$ctrl.user.MaccabiCode" />
+                    </div>
+                    <div class="form-group" ng-if="$ctrl.user.HMO != null && $ctrl.user.HMO.indexOf('maccabi')!=-1 && ['farmAdminHorse','vetrinar','shoeing'].indexOf($ctrl.role)==-1">
+                        <label>קוד טיפול מכבי</label>
+                        <input type="text" name="MaccabiCode1" class="form-control" ng-model="$ctrl.user.MaccabiCode1" />
+                    </div>
+
                     <div class="form-group" ng-if="['farmAdminHorse','vetrinar','shoeing'].indexOf($ctrl.role)==-1">
                         <label>חבר נבחרת</label>
                         <select class="form-control" ng-model="$ctrl.user.TeamMember">
@@ -338,7 +354,7 @@
                     <div class="form-group" ng-if="['farmAdminHorse','vetrinar','shoeing'].indexOf($ctrl.role)==-1">
                         <label>סוס קבוע</label>
 
-                        
+
                         <select class="form-control" ng-options="horse.Id as horse.Name for horse in $ctrl.horses |filter:{Ownage:'school'}  |filter:{Active:'!notActive'} |filter:{Farm_Id:$ctrl.user.Farm_Id}" ng-model="$ctrl.user.MainHorseId">
                             <option value="">בחר סוס</option>
                         </select>
@@ -815,8 +831,7 @@
                                         <option value="ashrai" ng-if="$ctrl.newPayment.IsAshrai">סליקה כרטיס אשראי</option>
                                         <option value="token" ng-if="$ctrl.newPayment.IsToken">חיוב בטוקן</option>
                                         <option value="credit card">כרטיס אשראי</option>
-                                        <option value="bank transfer">בנק</option>
-
+                                        <option value="bank transfer">העברה בנקאית</option>
                                         <option value="PayPal">PayPal</option>
                                         <option value="Pay">Pay</option>
                                         <option value="Bit">Bit</option>
@@ -838,7 +853,7 @@
 
                                 <div ng-if="$ctrl.newPayment.payment_type=='check'" style="border:solid 1px gray;border-radius:10px;padding:10px;">
 
-                                    <div class="form-group" ng-if="$ctrl.newPayment.payment_type=='check'">
+                                    <div class="form-group" ng-if="$ctrl.newPayment.payment_type=='check' && !$ctrl.newPayment.isMasKabala">
                                         <label> האם חשבונית מס תצא אוטמטית בזמן הפירעון?</label> <input class="" type="checkbox" ng-model="$ctrl.newPayment.Checks[$ctrl.currentCheckindex].checks_auto" />
                                     </div>
 
@@ -1327,7 +1342,7 @@
                         <thead>
                             <tr>
                                 <th>תאריך</th>
-                                <th>טקסט</th>
+                                <th>פתח דו"ח</th>
 
                             </tr>
                         </thead>
@@ -1622,7 +1637,7 @@
                         <thead>
                             <tr>
                                 <th>תאריך</th>
-                                <th>טקסט</th>
+                                <th>פתח דו"ח</th>
                                 <!--<th>מחיקה</th>-->
                             </tr>
                         </thead>

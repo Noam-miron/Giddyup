@@ -91,7 +91,7 @@
         this.viewCalenderType = "agendaDay";
         this.setExex = _setExex.bind(this);
 
-
+        this.activeInstructors = this.instructors.filter(x => x.Active == "active");
 
        // this.horses = this.horses.filter(x => x.Ownage == "school");
 
@@ -206,7 +206,8 @@
 
                 var dateFrom = moment().toDate();
                 var repDate = moment(dateFrom).format('DD/MM/YYYY HH:mm');
-                saveAs(blob, " לוח שיעורים " + repDate + ".xls");
+                //saveAs(blob, " לוח שיעורים " + repDate + ".xls");
+                saveAs(blob, " שיבוץ סוסים " + repDate + ".xls");
 
 
             });
@@ -221,7 +222,7 @@
 
 
             var prevInstructorId = "";
-            var HeaderTemplate = "<table width='100%' border='1' dir='rtl' style='border-collapse:collapse; table-layout:fixed;' ><tr><th style='width:5%'>שעה</th>";
+            var HeaderTemplate = "<table width='100%' border='1' dir='rtl' style='border-collapse:collapse; table-layout:fixed;' ><tr><th style='width:80px;background:yellow;'>שעה</th>";
             var BodyTemplate = "";
 
 
@@ -234,7 +235,7 @@
                     if (this.instructors[i].Show) {
 
                       
-                        HeaderTemplate += "<th style=''>" + this.instructors[i].FirstName + " " + this.instructors[i].LastName + "</th>";
+                        HeaderTemplate += "<th style='background:yellow;width:270px'>" + this.instructors[i].FirstName + " " + this.instructors[i].LastName + "</th>";
                         InstructArray.push(this.instructors[i].Id);
 
 
@@ -267,7 +268,7 @@
 
                     var CurrentTime = hour + ":" + quarterHours[j];
 
-                    BodyTemplate += "<tr><td>" + CurrentTime + "</td>";
+                    BodyTemplate += "<tr><td valign='top' align='center' style=''>" + CurrentTime + "</td>";
 
 
                     for (var m in InstructArray) {
@@ -332,7 +333,7 @@
                 });
 
 
-                saveAs(blob, " לוח שיעורים " + new Date() + ".html");
+                saveAs(blob, " לוח שיעורים " + new Date() + ".xls");
 
             });
 
@@ -358,12 +359,8 @@
                         var status = less.statuses.filter(n => n.StudentId == this.students[x].Id);
                         var horseObj = this.horses.filter(x => x.Id == status[0].HorseId);
                         if (horseObj.length > 0) {
-
-
                             horseName = "(" + horseObj[0].Name + ")";
-
                         }
-
 
                         var statusName = "";
                         if (status.length > 0) {
@@ -414,7 +411,8 @@
 
 
 
-                        res += "<div>" + this.students[x].FirstName + " " + this.students[x].LastName + " " + horseName + ((statusName)?(" - " + statusName ):'')+ "</div>";
+                        //res += "<div>" + this.students[x].FirstName + " " + this.students[x].LastName + " "  + horseName + ((statusName)?(" - " + statusName ):'') + "</div>";
+                        res += "<div>" + horseName + "</div>";
                     }
                 }
 
@@ -441,8 +439,13 @@
 
                     if (less.students[i] == this.students[x].Id) {
 
-                       
                         var status = less.statuses.filter(n => n.StudentId == this.students[x].Id);
+                        var horseName = "";
+                        var horseObj = this.horses.filter(x => x.Id == status[0].HorseId);
+                        if (horseObj.length > 0) {
+                            horseName = "(" + horseObj[0].Name + ")";
+                        }
+
                         var statusName = "";
                         if (status.length > 0) {
                            
@@ -494,7 +497,7 @@
 
                         }
 
-                        res += this.students[x].FirstName + " " + this.students[x].LastName +"<div class='dvStatus'>" + statusName+"</div>" +  "</br>";
+                        res += this.students[x].FirstName + " " + this.students[x].LastName + " " + horseName + "<div class='dvStatus'>" + statusName + "</div>" + "</br>";
                     }
                 }
 
@@ -791,7 +794,6 @@
 
             for (var i in this.instructors) {
 
-
                 this.instructors[i].Show = $scope.selectAll;
                 // visibleInstructors[this.instructors[i].Id] = this.instructors[i].Show;
 
@@ -902,7 +904,7 @@
 
                
 
-                if (this.instructors[i].Show) {
+                if (this.instructors[i].Show && this.instructors[i].Active == 'active') {
 
                     
 
@@ -918,7 +920,7 @@
                     var avArray = [];
 
                     for (var j in this.availablehours) {
-                        if (this.availablehours[j].UserId == this.instructors[i].Id) {
+                        if (this.availablehours[j].UserId == this.instructors[i].Id && this.instructors[i].Active == 'active') {
                             avArray.push(this.availablehours[j]);
 
 

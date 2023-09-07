@@ -51,7 +51,10 @@
         styles: [
             { id: 'treatment', name: 'רכיבה טיפולית', reportColor: '#e6e6e6'},
             { id: 'privateTreatment', name: 'טיפולית פרטי', reportColor: '#e6e6e6' },
-            { id: 'western', name: 'מערבי', reportColor: '#e6e6e6'},
+            { id: 'western', name: 'מערבי', reportColor: '#e6e6e6' },
+            { id: 'extreme', name: 'אקסטרים', reportColor: '#e6e6e6' },
+            { id: 'carriage', name: 'רכיבת כרכרות אתגרית', reportColor: '#e6e6e6' },
+            { id: 'allAround', name: 'אול אראונד', reportColor: '#e6e6e6' },
             { id: 'reining', name: 'ריינינג', reportColor: '#e6e6e6'},
             { id: 'karting', name: 'קאטינג', reportColor: '#e6e6e6' },
             { id: 'english', name: 'אינגליש', reportColor: '#e6e6e6'},
@@ -71,6 +74,8 @@
             { id: 'treatmentPsychoDrama', name: 'פסיכודרמה' },
             { id: 'treatmentMovement', name: 'טיפול בתנועה' },
             { id: 'tiyul', name: '*** טיול ***' },
+            { id: 'privateTreatmentAnimal', name: 'טיפול בעזרת בעלי חיים פרטי' },
+            { id: 'privateTreatmentGroup', name: 'טיפולי קבוצתי' },
         ],
         HMOs: [
             { id: 'maccabiGold', name: 'מכבי זהב', reportName: 'מכבי', prePaid: true, maxLessons: 30, reportColor: '#42ecf5;' },

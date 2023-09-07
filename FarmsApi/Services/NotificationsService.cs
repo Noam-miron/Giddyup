@@ -197,7 +197,11 @@ namespace FarmsApi.Services
                 var notifications = Context.Notifications.Where(n => n.Date < untilDate && n.FarmId == currentUser.Farm_Id && n.IsDelete == false).ToList();
                 notifications = notifications.ToList().Where(n =>
                 {
-                    if (n.EntityType == "lessons" && n.EntityId == currentUser.Id)
+                    if (currentUser.Farm_Id==125)
+                    {
+                        return false;
+                    }
+                    else if (n.EntityType == "lessons" && n.EntityId == currentUser.Id)
                     {
                         return true;
                     }

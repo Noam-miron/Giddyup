@@ -131,7 +131,6 @@ namespace FarmsApi.Services
         }
 
 
-
         [Authorize]
         [Route("getUsers/{role?}/{includeDeleted?}")]
         [HttpGet]
@@ -147,9 +146,6 @@ namespace FarmsApi.Services
         {
             return Ok(UsersService.GetStudents());
         }
-
-
-
 
 
         [Authorize]
@@ -254,6 +250,24 @@ namespace FarmsApi.Services
         {
 
             return Ok(UsersService.HMOReport(fromDate, toDate));
+        }
+
+        [Authorize]
+        [Route("getReportMaccabi/{fromDate}/{toDate}")]
+        [HttpGet]
+        public IHttpActionResult getReportMaccabi([FromUri] string fromDate, [FromUri] string toDate)
+        {
+
+            return Ok(UsersService.MaccabiReport(fromDate, toDate));
+        }
+
+        [Authorize]
+        [Route("getReportKlalit/{fromDate}/{toDate}")]
+        [HttpGet]
+        public IHttpActionResult getReportKlalit([FromUri] string fromDate, [FromUri] string toDate)
+        {
+
+            return Ok(UsersService.KlalitReport(fromDate, toDate));
         }
 
         [Authorize]

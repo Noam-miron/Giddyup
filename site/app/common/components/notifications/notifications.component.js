@@ -15,7 +15,7 @@
             notificationsService.getNotifications().then(function (data) {
                 $scope.$broadcast('notificationsNav.refresh', data.length)
             });
-        }, 1000 * 60);
+        }, 1000 * 60 * 15);
 
         $scope.$on('notificationsNav.refresh', function (event, data) {
             // צחי הוריד צהלה של סוס בעת הודעה חדשה

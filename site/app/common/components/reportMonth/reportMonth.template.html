@@ -85,13 +85,19 @@
                 <thead>
                     <tr>
                         <th>תאריך</th>
-                        <th>טקסט</th>
+                        <th>מטרות</th>
+                        <th>מהלך</th>
+                        <th>סטטוס</th>
+                        <th>הערות</th>
                         <th>משוב</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr ng-repeat="detail in $ctrl.monthlyReportData">
                         <td>{{detail.Date | date:'dd/MM/yyyy'}}</td>
+                        <td>{{detail.Matarot}}</td>
+                        <td>{{detail.Mahalak}}</td>
+                        <td>{{detail.HearotStatus}}</td>
                         <td>{{detail.Details}}</td>
                         <td>{{detail.Mashov}}</td>
                         <!--<td><button class="btn btn-danger btn-xs" ng-click="$ctrl.removeTextDetail(detail)">מחיקה</button></td>-->

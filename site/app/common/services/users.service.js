@@ -33,6 +33,8 @@
 
         this.report = _report;
         this.reportHMO = _reportHMO;
+        this.reportMaccabi = _reportMaccabi;
+        this.reportKlalit = _reportKlalit;
         this.reportDebt = _reportDebt;
         this.getStudents = _getStudents;
         
@@ -279,6 +281,28 @@
          
             var deferred = $q.defer();
             $http.get(sharedValues.apiUrl + 'users/getReportHMO/' + fromDate + "/" + toDate).then(function (res) {
+                var data = res.data;
+
+                deferred.resolve(data);
+            });
+            return deferred.promise;
+        }
+
+        function _reportMaccabi(fromDate, toDate) {
+
+            var deferred = $q.defer();
+            $http.get(sharedValues.apiUrl + 'users/getReportMaccabi/' + fromDate + "/" + toDate).then(function (res) {
+                var data = res.data;
+
+                deferred.resolve(data);
+            });
+            return deferred.promise;
+        }
+
+        function _reportKlalit(fromDate, toDate) {
+
+            var deferred = $q.defer();
+            $http.get(sharedValues.apiUrl + 'users/getReportKlalit/' + fromDate + "/" + toDate).then(function (res) {
                 var data = res.data;
 
                 deferred.resolve(data);

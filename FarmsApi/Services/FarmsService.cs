@@ -324,7 +324,7 @@ namespace FarmsApi.Services
                 KlalitAPI.SupplierRequest kp = new KlalitAPI.SupplierRequest();
 
 
-                // kp.Url = "https://sapaktest.clalit.co.il/mushlamsupplierservice/SupplierRequest.asmx";
+                 kp.Url = "https://sapaktest.clalit.co.il/mushlamsupplierservice/SupplierRequest.asmx";
 
                 string xml = @"
                                     <XMLInput>

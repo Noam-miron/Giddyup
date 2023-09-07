@@ -329,14 +329,14 @@
 
         function _getStudentAge() {
 
-
             if (!this.user.BirthDate) return "0";
 
-            var diffyear = (moment()).diff(moment(this.user.BirthDate), 'year', true);
+            var diffYear = (moment()).diff(moment(this.user.BirthDate), 'year', true);
 
-            if (isNaN(diffyear)) return "0";
+            if (isNaN(diffYear)) return "0";
 
-            return Math.round(diffyear);
+            return parseFloat(diffYear.toFixed(1));
+            //return Math.round(diffYear);
 
         }
 
@@ -1523,7 +1523,7 @@
 
                     var isExist = this.monthlyReportHeader.filter(x => x.DateFormat == startFormat);
 
-                    if (isExist.length==0 && monthlyLessons[i].statuses[0].Details) {
+                    if (isExist.length == 0 && (monthlyLessons[i].statuses[0].Details || monthlyLessons[i].statuses[0].Mashov || monthlyLessons[i].statuses[0].Matarot || monthlyLessons[i].statuses[0].Mahalak || monthlyLessons[i].statuses[0].HearotStatus)) {
 
 
 
@@ -1542,10 +1542,17 @@
                     }
 
 
-                    if (monthlyLessons[i].statuses[0].Details || monthlyLessons[i].statuses[0].Mashov) {
+                    if (monthlyLessons[i].statuses[0].Details || monthlyLessons[i].statuses[0].Mashov || monthlyLessons[i].statuses[0].Matarot || monthlyLessons[i].statuses[0].Mahalak || monthlyLessons[i].statuses[0].HearotStatus) {
 
                         // alert(monthlyLessons[i].statuses[0].Details);
-                        this.monthlyReportData.push({ Date: monthlyLessons[i].start, Details: monthlyLessons[i].statuses[0].Details, Mashov: (monthlyLessons[i].statuses[0].Mashov) ? monthlyLessons[i].statuses[0].Mashov : "" });
+                        this.monthlyReportData.push({
+                            Date: monthlyLessons[i].start,
+                            Matarot: (monthlyLessons[i].statuses[0].Matarot) ? monthlyLessons[i].statuses[0].Matarot : "",
+                            Mahalak: (monthlyLessons[i].statuses[0].Mahalak) ? monthlyLessons[i].statuses[0].Mahalak : "",
+                            HearotStatus: (monthlyLessons[i].statuses[0].HearotStatus) ? monthlyLessons[i].statuses[0].HearotStatus : "",
+                            Details: (monthlyLessons[i].statuses[0].Details) ? monthlyLessons[i].statuses[0].Details : "",
+                            Mashov: (monthlyLessons[i].statuses[0].Mashov) ? monthlyLessons[i].statuses[0].Mashov : ""
+                        });
 
 
                     }
@@ -2045,11 +2052,25 @@
                     this.newPayment.api_email = this.farm.Meta.api_email;
                     this.newPayment.InvoiceDetailsArray = [];
                     this.newPayment.TiyulLessonId = null;
-                    if (this.user.Farm_Id != 46 && this.user.Farm_Id != 96) {
-                        this.newPayment.isMasKabala = true;
-                    } else {
-                        this.newPayment.isMasKabala = false;
-                        this.newPayment.isKabala = true;
+                    //Specific farm default payment preferences
+                    switch (this.user.Farm_Id) {
+                        case 120:
+                        case 110:
+                        case 40:
+                            this.newPayment.noEazi = true;
+                            this.newPayment.isMasKabala = true;
+                            break;
+                        case 46:
+                        case 86:
+                        case 99:
+                        case 121:
+                        case 128:
+                        case 129:
+                            this.newPayment.isMasKabala = false;
+                            this.newPayment.isKabala = true;
+                            break;
+                        default:
+                            this.newPayment.isMasKabala = true;
                     }
 
                     this.IsHiyuvInHashlama = this.farm.IsHiyuvInHashlama;
@@ -3480,12 +3501,12 @@
         function _setCheckboxForClose(pay) {
 
             // אם זה קבלה והשורה היא חשבונית מס ואין לו מסמך אב תציג אופציה לסגירה  || this.newPayment.isKabalaTroma
-            if ((this.newPayment.isKabala) && pay.doc_type == 'Mas' && !pay.SelectedForInvoice) {
+            if ((this.newPayment.isKabala) && (pay.doc_type == 'Mas' || pay.doc_type == 'Iska') && !pay.SelectedForInvoice) {
 
                 return true;
 
             }
-            else if ((this.newPayment.isMas) && pay.doc_type == 'Kabala' && !pay.SelectedForInvoice) {
+            else if ((this.newPayment.isMas) && (pay.doc_type == 'Kabala' || pay.doc_type == 'Zikuy' ) && !pay.SelectedForInvoice) {
 
                 return true;
             }

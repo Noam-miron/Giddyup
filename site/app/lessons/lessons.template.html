@@ -14,8 +14,8 @@
         <div id="addminusrowheight" class="fc-button-group">
             <button style="float:left;margin-right:3px" class=" btn btn-danger btn-xs" ng-show="$ctrl.viewCalenderType=='agendaDay'   && $ctrl.role != 'instructor' && $ctrl.role != 'farmAdminHorse' && $ctrl.role != 'stableman' && $ctrl.role != 'worker' && $ctrl.subrole!='stableman'  && $ctrl.subrole!='worker'" ng-click="$ctrl.Shibutz(true)"> ביטול שיבוץ </button>
             <button style="float:left;margin-right:3px" class=" btn btn-primary btn-xs" ng-show="$ctrl.viewCalenderType=='agendaDay'   && $ctrl.role != 'instructor' && $ctrl.role != 'farmAdminHorse' && $ctrl.role != 'stableman' && $ctrl.role != 'worker' && $ctrl.subrole!='stableman'  && $ctrl.subrole!='worker'" ng-click="$ctrl.Shibutz(false)"> 'שיבוץ סוסים אוטו </button>
-            <button style="float:left;margin-right:3px" class=" btn btn-success btn-xs" ng-show="$ctrl.viewCalenderType=='agendaDay'   && $ctrl.role != 'farmAdminHorse' && $ctrl.role != 'stableman' && $ctrl.role != 'worker' && $ctrl.subrole!='stableman'  && $ctrl.subrole!='worker'" ng-click="$ctrl.printLessons()"> הדפסה </button>
-            <button style="float:left;margin-right:3px" class=" btn btn-success btn-xs" ng-show="$ctrl.viewCalenderType=='agendaDay'   && $ctrl.role != 'farmAdminHorse' && $ctrl.role != 'stableman' && $ctrl.role != 'worker' && $ctrl.subrole!='stableman'  && $ctrl.subrole!='worker'" ng-click="$ctrl.printExcel()"> אקסל </button>
+            <button style="float:left;margin-right:3px" class=" btn btn-success btn-xs" ng-show="$ctrl.viewCalenderType=='agendaDay'   && $ctrl.role != 'farmAdminHorse' && $ctrl.role != 'stableman' && $ctrl.role != 'worker' && $ctrl.subrole!='stableman'  && $ctrl.subrole!='worker'" ng-click="$ctrl.printLessons()"> מערכת שיעורים </button>
+            <button style="float:left;margin-right:3px" class=" btn btn-success btn-xs" ng-show="$ctrl.viewCalenderType=='agendaDay'   && $ctrl.role != 'farmAdminHorse' && $ctrl.role != 'stableman' && $ctrl.role != 'worker' && $ctrl.subrole!='stableman'  && $ctrl.subrole!='worker'" ng-click="$ctrl.printExcel()"> מערכת סוסים </button>
 
             <button type="button" class="fc-next-button fc-button fc-state-default fc-corner-left" ng-click='$ctrl.customFont(-5)'>
                 <span class="fc-icon fc-icon-down-triangle"></span>
@@ -45,14 +45,14 @@
 
 
 
-                <span class="red-circle ng-binding" style="background-color:darkorange;font-size:15px;">{{$ctrl.lessonsCompletelength}} </span>&nbsp;ממתינים לשיעור השלמה
+                <span  class="red-circle ng-binding" style="background-color:darkorange;font-size:15px;">{{$ctrl.lessonsCompletelength}} </span>&nbsp;ממתינים לשיעור השלמה
             </div>
             <div ng-show="showDiv" class="dvContainer" style="height:550px;overflow:auto">
                 <!--<a class="" href="" bsTooltip title="Tooltip on bottom">
         Tooltip on bottom
     </a>-->
                
-                
+                <!--Completion req Lessons-->
                 <div ng-repeat="lesinst in $ctrl.lessonsComplete |filter:{isInstructor:'1'} | orderBy:['FullName']" style="width:250px">
                     <div class="fc-draggable dvDragElement" style="background-color:goldenrod" ng-click="open = !open">
                         <img ng-show="open" src="../../images/table-arrow-down.png" />
@@ -187,7 +187,7 @@
                 <label style="color:blue"><input type="checkbox" ng-model="selectAll" ng-click="$ctrl.reloadCheckUnCheck()" /> סמן הכל</label>
             </div>)
 
-            <div class="checkbox-inline" ng-repeat="instructor in $ctrl.instructors">
+            <div class="checkbox-inline" ng-repeat="instructor in $ctrl.activeInstructors">
                 <label style="color:{{instructor.EventsColor}}"><input type="checkbox" name="selectedInstructors[]" ng-model="instructor.Show" ng-click="$ctrl.reloadCalendarData()" /> {{instructor.FirstName}} {{instructor.LastName}}</label>
             </div>
         </div>

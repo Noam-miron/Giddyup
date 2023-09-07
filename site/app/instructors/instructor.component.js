@@ -82,7 +82,7 @@
         function _submit() {
             if (this.scope.instructorForm.$valid) {
                 this.user.Role = this.user.Role || 'instructor';
-                this.user.Active = 'active';
+                //this.user.Active = 'active';
 
                 for (var i in this.availablehours) {
 

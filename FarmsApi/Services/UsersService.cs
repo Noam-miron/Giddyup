@@ -698,10 +698,7 @@ namespace FarmsApi.Services
             }
         }
 
-
-
-
-
+ 
         private static List<User> FilterByUser(List<User> Users)
         {
             var CurrentUser = GetCurrentUser();
@@ -1903,6 +1900,71 @@ namespace FarmsApi.Services
                     }
 
                 }
+
+
+                return null;
+
+            }
+        }
+
+        public static object MaccabiReport(string fromDate, string toDate)
+        {
+            using (var Context = new Context())
+            {
+                var CurrentUser = GetCurrentUser();
+
+
+
+                SqlParameter Farm_IdPara = new SqlParameter("Farm_Id", CurrentUser.Farm_Id);
+                SqlParameter FromDatePara = new SqlParameter("FromDate", fromDate);
+                SqlParameter ToDatePara = new SqlParameter("ToDate", toDate);
+
+
+                try
+                {
+                    var query = Context.Database.SqlQuery<MaccabiReport>
+                    ("GetReportMaccabi @Farm_Id,@FromDate,@ToDate",
+                    Farm_IdPara, FromDatePara, ToDatePara);
+                    var res = query.ToList();
+                    return res;
+
+                }
+                catch (Exception ex)
+                {
+
+                }
+                return null;
+            }
+        }
+
+        public static object KlalitReport(string fromDate, string toDate)
+        {
+            using (var Context = new Context())
+            {
+                var CurrentUser = GetCurrentUser();
+
+
+
+                SqlParameter Farm_IdPara = new SqlParameter("Farm_Id", CurrentUser.Farm_Id);
+                SqlParameter FromDatePara = new SqlParameter("FromDate", fromDate);
+                SqlParameter ToDatePara = new SqlParameter("ToDate", toDate);
+
+
+                try
+                {
+                    var query = Context.Database.SqlQuery<KlalitReport>
+                    ("GetReportKlalit @Farm_Id,@FromDate,@ToDate",
+                    Farm_IdPara, FromDatePara, ToDatePara);
+                    var res = query.ToList();
+                    return res;
+
+                }
+                catch (Exception ex)
+                {
+
+
+                }
+
 
 
                 return null;

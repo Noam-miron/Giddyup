@@ -95,7 +95,7 @@
 
                             <td>{{$ctrl.getHebStyleHMO(1,user.Style)}}</td>
                             <td>{{$ctrl.getHebStyleHMO(2,user.HMO)}}</td>
-                            <td style="font-weight:bold;text-align:right;direction:ltr;color:{{(user.Total < 0)?'red':''}}">{{user.Total}}</td>
+                            <td style="font-weight:bold;text-align:right;direction:ltr;color:{{(user.HMO!='maccabiGold' && user.HMO!='maccabiSheli' && user.Total < 0)?'red':''}}">{{user.Total}}</td>
                         </tr>
                     </tbody>
                 </table>

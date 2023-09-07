@@ -1,24 +1,23 @@
-﻿<form name="loginForm" novalidate>
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            כניסה למערכת
-        </div>
-        <div class="panel-body">
-            <div class="form-group">
-                <label>אימייל</label>
-                <input class="form-control" type="email" ng-model="$ctrl.email" required  />
+﻿<body>
+    <form name="loginForm" novalidate>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                כניסה למערכת
             </div>
-            <div class="form-group">
-                <label>סיסמה</label>
-                <input class="form-control" type="password" ng-model="$ctrl.password" required />
+            <div class="panel-body">
+                <div class="form-group">
+                    <label>אימייל</label>
+                    <input class="form-control" type="email" ng-model="$ctrl.email" required />
+                </div>
+                <div class="form-group">
+                    <label>סיסמה</label>
+                    <input class="form-control" type="password" ng-model="$ctrl.password" required />
+                </div>
             </div>
-            <!--<div class="panel-footer">
-                <button class="btn btn-success" type="button"  ng-click="$ctrl.login22()">ddddd</button>
-            </div>-->
-
+            <div class="panel-footer">
+                <button class="btn btn-success" type="submit" ng-disabled="loginForm.$invalid" ng-click="$ctrl.login()">כניסה</button>
+            </div>
         </div>
-        <div class="panel-footer">
-            <button class="btn btn-success" type="submit" ng-disabled="loginForm.$invalid" ng-click="$ctrl.login()">כניסה</button>
-        </div>
-    </div>
-</form>
+    </form>
+    <div style="background-image: url(../../images/background_horse.jpg); background-color: #cccccc; height: 1000px; object-fit: contain; background-position: top; background-repeat: no-repeat; background-size: cover; position: relative; ">
+</body>
